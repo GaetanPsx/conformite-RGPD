@@ -123,9 +123,9 @@ specs/[###-feature]/
 ```text
 src/
 ├── models/          # Entités du domaine (data-model.md) : DepotCible, DocumentationFournie,
-│                    # FichierDepot, SelectionAiAct, SelectionRgpd, PassageLegalRecupere,
-│                    # ProfilAiAct, DetectionRgpd, NonConformite, ProfilProjetCombine,
-│                    # CorpusJuridique, RapportFinal
+│                    # ModeEntree, FichierDepot, FichierAvecContenu, SelectionAiAct, SelectionRgpd,
+│                    # PassageLegalRecupere, ProfilAiAct, DetectionRgpd, NonConformite,
+│                    # ProfilProjetCombine, CorpusJuridique, RapportFinal
 ├── services/
 │   ├── input_router.py      # Détermine le mode d'entrée (dépôt vs documentation) (FR-001)
 │   ├── github_client.py     # Liste des fichiers via l'API GitHub non authentifiée (FR-002/003)

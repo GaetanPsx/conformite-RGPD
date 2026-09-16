@@ -138,7 +138,7 @@ Résultat structuré de l'unique appel LLM (FR-007), désormais enrichi par les 
 |---|---|---|
 | `secteur_activite` | string \| null | `null` si le LLM n'a pas pu être interprété (Edge Cases) |
 | `finalite` | string \| null | Idem |
-| `niveau_autonomie_decisionnelle` | string \| null | Idem — **ne détermine jamais un niveau de risque** (FR-014, cette valeur est une observation, pas un verdict) |
+| `niveau_autonomie_decisionnelle` | enum \| null | Une de : `aucune`, `assistee`, `supervisee`, `autonome` (FR-007a) ; `null` si le LLM n'a pas pu être interprété — **ne détermine jamais un niveau de risque** (FR-014, cette valeur est une observation, pas un verdict) |
 | `fichiers_source` | list[string] | Chemins des fichiers de `SelectionAiAct` (ou référence à `DocumentationFournie`) ayant servi de contexte |
 | `passages_utilises` | list[PassageLegalRecupere.id_reference] | Passages effectivement cités pour ce profil |
 | `echec` | bool | `true` si la réponse LLM était malformée/vide/inexploitable (Edge Cases) ; dans ce cas les champs ci-dessus sont `null` et le rapport DOIT signaler explicitement l'échec |
@@ -198,7 +198,7 @@ FR-001b, FR-017).
 |---|---|---|
 | `profil_combine` | ProfilProjetCombine | — |
 | `citations` | list[PassageLegalRecupere.id_reference] | Résolues uniquement contre les passages récupérés pour cette évaluation (FR-013/FR-019) |
-| `avertissements` | list[string] | Ex. "sélection partielle", "analyse AI Act échouée", "aucune donnée personnelle détectée", "aucune non-conformité identifiée", "entrée documentation ignorée au profit du dépôt" (Edge Cases) |
+| `avertissements` | list[string] | Ex. "sélection partielle", "analyse AI Act échouée", "aucune donnée personnelle détectée", "aucune non-conformité identifiée", "entrée documentation ignorée au profit du dépôt", "liste de fichiers du dépôt incomplète (arborescence GitHub tronquée)" (Edge Cases, FR-003a) |
 | `format` | const `"html"` | Rendu server-side via Jinja2 (clarification du 2026-09-16) |
 | `telechargeable` | bool | Toujours `true` (FR-001b) ; le même rendu HTML est proposé en téléchargement, généré à la volée sans écriture serveur |
 

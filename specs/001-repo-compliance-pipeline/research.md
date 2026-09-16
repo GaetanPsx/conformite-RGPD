@@ -49,6 +49,15 @@ Toutes les inconnues de la section Technical Context du plan ont été résolues
   potentiellement une meilleure qualité d'extraction mais au prix d'un coût par appel plusieurs
   fois supérieur, menaçant SC-004 sans bénéfice fonctionnel évident pour une tâche d'extraction
   structurée (secteur/finalité/autonomie) qui ne demande pas un raisonnement complexe.
+- **Reproductibilité (Principe III)** : l'appel LLM (`llm_client.py`) DOIT être fait avec une
+  température de 0 (ou la valeur la plus basse disponible) et des instructions de sortie
+  strictement structurées (JSON, échelle fermée pour `niveau_autonomie_decisionnelle`, FR-007a),
+  afin de maximiser la reproductibilité d'une évaluation à l'autre pour un même contenu source et
+  un même index RAG. Une reproductibilité stricte au caractère près n'est pas garantissable pour
+  un texte libre généré par LLM (nature probabiliste du modèle) ; ce qui DOIT rester strictement
+  reproductible est la partie déterministe du pipeline (sélection de fichiers, scan RGPD,
+  récupération RAG) et la structure/les citations du profil AI Act, pas la formulation exacte du
+  texte en langage clair.
 
 ## 4. Détection RGPD par motifs
 

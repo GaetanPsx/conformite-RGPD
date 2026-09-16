@@ -213,8 +213,16 @@ qu'aucune trace de cette évaluation ne subsiste côté serveur après la répon
 - Que se passe-t-il si le dépôt dépasse la limite de fichiers pertinents pour une ou les deux
   catégories (AI Act / RGPD) ? Le système sélectionne un sous-ensemble borné selon une règle de
   priorité déterministe et documente que la sélection est partielle.
-- Que se passe-t-il si un fichier sélectionné est binaire, illisible en texte, ou dépasse la
-  taille plafond à lui seul ? Il est exclu ou tronqué avant tout envoi au LLM ou scan de motifs.
+- Que se passe-t-il si un fichier sélectionné est binaire, illisible en texte (y compris un
+  contenu qui ne peut pas être décodé en UTF-8), ou dépasse la taille plafond à lui seul ? Un
+  fichier binaire ou non décodable en texte est exclu. Un fichier décodable en texte mais qui
+  dépasse, à lui seul, le plafond de contenu par appel LLM est tronqué (jamais exclu pour ce seul
+  motif) avant tout envoi au LLM ou scan de motifs.
+- Que se passe-t-il si l'API GitHub renvoie une arborescence de fichiers tronquée (dépôt trop
+  volumineux pour l'endpoint d'arborescence récursive non authentifiée) ? Le système poursuit
+  l'évaluation sur les fichiers effectivement listés et signale explicitement, dans le rapport,
+  que la liste de fichiers du dépôt était incomplète, plutôt que d'omettre silencieusement des
+  fichiers pertinents non vus.
 - Que se passe-t-il si la réponse du LLM est malformée, vide, ou ne peut pas être interprétée ?
   Le système ne plante pas silencieusement ; le rapport final indique explicitement que l'analyse
   AI Act (et/ou la liste de non-conformités) a échoué pour cette évaluation.
@@ -255,6 +263,11 @@ qu'aucune trace de cette évaluation ne subsiste côté serveur après la répon
   contenu fourni directement (texte collé ou fichier) est utilisé comme unique source d'analyse.
 - **FR-003**: En mode dépôt, le système DOIT récupérer la liste des chemins de fichiers du dépôt
   sans télécharger le contenu de ces fichiers à cette étape.
+- **FR-003a**: Si l'API GitHub indique que la liste de fichiers renvoyée est tronquée (dépôt
+  dépassant la limite de l'endpoint d'arborescence récursive), le système DOIT poursuivre
+  l'évaluation sur les fichiers effectivement listés et ajouter un avertissement explicite dans
+  le rapport final signalant que la liste de fichiers du dépôt était incomplète, plutôt que de le
+  taire silencieusement.
 - **FR-004**: En mode dépôt, le système DOIT identifier, parmi la liste des fichiers, ceux
   pertinents pour l'AI Act (au minimum : README, fichiers de dépendances, code
   d'inférence/modèle).
@@ -277,6 +290,13 @@ qu'aucune trace de cette évaluation ne subsiste côté serveur après la répon
   (FR-018), afin d'en déduire le secteur d'activité, la finalité, le niveau d'autonomie
   décisionnelle du système analysé, et une liste de points de non-conformité potentiels rattachés
   chacun à un passage légal récupéré.
+- **FR-007a**: Le niveau d'autonomie décisionnelle déduit DOIT être exprimé selon une échelle
+  fermée à 4 valeurs : `aucune` (décision entièrement humaine, le système n'automatise rien),
+  `assistee` (le système recommande, un humain décide), `supervisee` (le système décide, un
+  humain peut intervenir ou annuler), `autonome` (le système décide sans intervention humaine
+  possible en pratique) ; le LLM DOIT choisir l'une de ces quatre valeurs, ou le champ reste
+  `null` en cas d'échec de l'appel (FR-007, Edge Cases). Cette échelle est une observation
+  descriptive, jamais un verdict de risque (FR-014).
 - **FR-008**: Le système DOIT plafonner la taille du contenu envoyé à chaque appel LLM à un
   maximum de 40 000 caractères au total (contenu source et passages légaux récupérés cumulés,
   tronqués si nécessaire pour respecter cette limite).

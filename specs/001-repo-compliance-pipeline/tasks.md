@@ -36,17 +36,21 @@ Projet unique (plan.md, Structure Decision) :
 
 **Purpose**: Initialisation du projet Python/FastAPI et de sa structure de base
 
-- [ ] T001 Créer l'arborescence du projet (`src/models/`, `src/services/`, `src/services/legal_rag/`,
+- [X] T001 Créer l'arborescence du projet (`src/models/`, `src/services/`, `src/services/legal_rag/`,
       `src/web/`, `src/web/templates/`, `src/data/legal_corpus/`, `tests/contract/`,
       `tests/integration/`, `tests/unit/`) avec fichiers `__init__.py` Python pour chaque package
       sous `src/`
-- [ ] T002 Créer `requirements.txt` à la racine avec `fastapi`, `uvicorn`, `jinja2`,
+- [X] T002 Créer `requirements.txt` à la racine avec `fastapi`, `uvicorn`, `jinja2`,
       `python-multipart` (upload de fichier), `httpx`, `anthropic`, `sentence-transformers`,
       `numpy`, `pytest`, `respx` (plan.md Primary Dependencies, research.md §1/§2/§3/§6/§7)
-- [ ] T003 [P] Configurer `pyproject.toml` (ou `setup.cfg`) avec `pytest` (chemin `tests/`) et un
+- [X] T003 [P] Configurer `pyproject.toml` (ou `setup.cfg`) avec `pytest` (chemin `tests/`) et un
       outil de lint/format (ex. `ruff`) pour le projet Python 3.11 (plan.md Technical Context)
-- [ ] T004 [P] Créer `.env.example` documentant `ANTHROPIC_API_KEY` requis (quickstart.md
+- [X] T004 [P] Créer `.env.example` documentant `ANTHROPIC_API_KEY` requis (quickstart.md
       Prérequis), sans valeur réelle committée
+- [X] T004a [P] Créer le workflow CI `.github/workflows/tests.yml` exécutant `pytest` (avec
+      `respx`, sans appel réseau réel) sur chaque push/PR, conformément à l'exigence de la
+      Constitution "Development Workflow & Quality Gates" ("CI MUST run the full rule test suite
+      before merge")
 
 **Checkpoint**: Structure du projet prête, dépendances déclarées.
 
@@ -59,40 +63,40 @@ bloquants pour toutes les user stories
 
 **⚠️ CRITICAL**: Aucune user story ne peut être commencée avant la fin de cette phase
 
-- [ ] T005 [P] Définir les modèles Pydantic `DepotCible` (`url`, `owner`, `repo`, `est_public`,
+- [X] T005 [P] Définir les modèles Pydantic `DepotCible` (`url`, `owner`, `repo`, `est_public`,
       `default_branch`) et `ModeEntree` (`mode`: `"depot"`|`"documentation"`, `source_ignoree: bool`)
       dans `src/models/depot.py`, avec validation du champ `url` selon le format
       `https://github.com/{owner}/{repo}` (data-model.md DepotCible, ModeEntree ; FR-001)
-- [ ] T006 [P] Définir le modèle Pydantic `DocumentationFournie` (`source`: enum
+- [X] T006 [P] Définir le modèle Pydantic `DocumentationFournie` (`source`: enum
       `"texte_colle"`|`"fichier_televerse"`, `contenu: str` non vide, `nom_fichier: str | None`,
       `tronque: bool`) dans `src/models/documentation.py` (data-model.md DocumentationFournie ;
       FR-001, FR-006a, FR-016)
-- [ ] T007 [P] Définir les modèles Pydantic `FichierDepot` (`chemin`, `taille_octets: int | None`,
+- [X] T007 [P] Définir les modèles Pydantic `FichierDepot` (`chemin`, `taille_octets: int | None`,
       `extension: str | None`, `profondeur: int`) et `FichierAvecContenu` (`fichier`, `contenu`,
       `tronque: bool`) dans `src/models/fichier.py` (data-model.md FichierDepot, FichierAvecContenu ;
       FR-003)
-- [ ] T008 [P] Définir les modèles Pydantic `SelectionAiAct` et `SelectionRgpd` (`fichiers:
+- [X] T008 [P] Définir les modèles Pydantic `SelectionAiAct` et `SelectionRgpd` (`fichiers:
       list[FichierAvecContenu]`, `selection_partielle: bool`, `taille_totale_caracteres: int` pour
       `SelectionAiAct`) dans `src/models/selection.py`, avec la contrainte "≤ 15 éléments en mode
       dépôt" documentée en docstring (data-model.md SelectionAiAct, SelectionRgpd ; FR-006, FR-006a)
-- [ ] T009 [P] Définir les modèles Pydantic `PassageLegalRecupere` (`id_reference`, `texte`,
+- [X] T009 [P] Définir les modèles Pydantic `PassageLegalRecupere` (`id_reference`, `texte`,
       `score_pertinence: float`) et l'accès en lecture seule `CorpusJuridique` (`id_reference`,
       `texte: str | None`, `theme`, `embedding: list[float] | None`) dans
       `src/models/legal_corpus.py` (data-model.md CorpusJuridique, PassageLegalRecupere ; FR-013,
       FR-018, FR-019)
-- [ ] T010 [P] Définir les modèles Pydantic `ProfilAiAct` (`secteur_activite: str | None`,
+- [X] T010 [P] Définir les modèles Pydantic `ProfilAiAct` (`secteur_activite: str | None`,
       `finalite: str | None`, `niveau_autonomie_decisionnelle: str | None`,
       `fichiers_source: list[str]`, `passages_utilises: list[str]`, `echec: bool`) dans
       `src/models/profil_aiact.py` (data-model.md ProfilAiAct ; FR-007, FR-014)
-- [ ] T011 [P] Définir le modèle Pydantic `DetectionRgpd` (`categorie`: enum `identite`, `contact`,
+- [X] T011 [P] Définir le modèle Pydantic `DetectionRgpd` (`categorie`: enum `identite`, `contact`,
       `identifiant_national`, `sante`, `biometrie`, `origine_croyances`; `source`, `motif`,
       `extrait_masque`) dans `src/models/detection_rgpd.py` (data-model.md DetectionRgpd ; FR-010,
       FR-010a)
-- [ ] T012 [P] Définir le modèle Pydantic `NonConformite` (`description`, `passage_source:` référence
+- [X] T012 [P] Définir le modèle Pydantic `NonConformite` (`description`, `passage_source:` référence
       à `PassageLegalRecupere.id_reference` DOIT être non `null`, `origine`: enum
       `"profil_aiact"`|`"detection_rgpd"`) dans `src/models/non_conformite.py` (data-model.md
       NonConformite ; FR-007, FR-012, FR-019)
-- [ ] T013 [US aucune, foundational] Définir les modèles Pydantic `ProfilProjetCombine`
+- [X] T013 [US aucune, foundational] Définir les modèles Pydantic `ProfilProjetCombine`
       (`mode_entree`, `depot: DepotCible | None`, `documentation: DocumentationFournie | None`,
       `profil_aiact`, `detections_rgpd: list[DetectionRgpd]`, `non_conformites:
       list[NonConformite]`, `appels_llm_effectues: int` ≤ 2, `taille_envoyee_par_appel: list[int]`)
@@ -100,43 +104,45 @@ bloquants pour toutes les user stories
       `format`: const `"html"`, `telechargeable: bool` toujours `true`) dans
       `src/models/rapport.py` (data-model.md ProfilProjetCombine, RapportFinal ; FR-009, FR-011,
       FR-012, FR-015, FR-017 ; depends on T005-T012)
-- [ ] T014 Créer le corpus juridique de test minimal (extraits AI Act et RGPD réels couvrant au
+- [X] T014 Créer le corpus juridique de test minimal (extraits AI Act et RGPD réels couvrant au
       moins : base légale pour données de santé, catégories de données sensibles, obligations de
       transparence pour systèmes à autonomie décisionnelle) en `src/data/legal_corpus/corpus.json`
       (liste d'objets `{id_reference, texte, theme}`), utilisé par `build_index.py` (T015) et par
       les tests (data-model.md CorpusJuridique ; Assumptions spec.md — corpus fourni séparément)
-- [ ] T015 Implémenter `src/services/legal_rag/build_index.py` : script hors ligne qui charge
+- [X] T015 Implémenter `src/services/legal_rag/build_index.py` : script hors ligne qui charge
       `src/data/legal_corpus/corpus.json`, encode chaque passage avec `sentence-transformers`
       (modèle `paraphrase-multilingual-MiniLM-L12-v2`, research.md §7), et écrit les vecteurs +
       `id_reference` + `texte` dans `src/data/legal_corpus/index.npz` (ou équivalent `.npy`/`.json`
       versionné) ; exécuté une seule fois, jamais à l'exécution d'une évaluation (FR-018,
       research.md §7 ; depends on T014)
-- [ ] T016 Exécuter `python -m src.services.legal_rag.build_index` pour générer et committer l'index
+- [X] T016 Exécuter `python -m src.services.legal_rag.build_index` pour générer et committer l'index
       vectoriel initial `src/data/legal_corpus/index.npz` (quickstart.md Prérequis ; depends on T015)
-- [ ] T017 [P] Implémenter `src/services/legal_rag/retriever.py` : charge l'index versionné
+- [X] T017 [P] Implémenter `src/services/legal_rag/retriever.py` : charge l'index versionné
       (`index.npz`), encode la requête (texte condensé) avec le même modèle d'embedding local,
       calcule la similarité cosinus via `numpy` contre les vecteurs pré-calculés, et retourne le
       top-N (N borné, ex. 5 à 10) `PassageLegalRecupere` triés par `score_pertinence` décroissant ;
       0 appel LLM (FR-018/FR-019, research.md §7 ; depends on T009, T016)
-- [ ] T018 [P] Implémenter `src/services/github_client.py` avec `httpx` : fonction
+- [X] T018 [P] Implémenter `src/services/github_client.py` avec `httpx` : fonction
       `verifier_accessibilite(owner, repo) -> DepotCible` appelant `GET
       /repos/{owner}/{repo}` (distingue 404 dépôt privé/inexistant de 403/429 rate limit, research.md
-      §2) et fonction `lister_fichiers(depot: DepotCible) -> list[FichierDepot]` appelant `GET
-      /repos/{owner}/{repo}/git/trees/{sha}?recursive=1` sans télécharger le contenu (FR-002, FR-003
-      ; depends on T005, T007)
-- [ ] T019 [P] Implémenter `src/services/input_router.py` : fonction `determiner_mode(repo_url:
+      §2) et fonction `lister_fichiers(depot: DepotCible) -> tuple[list[FichierDepot], bool]`
+      appelant `GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1` sans télécharger le contenu,
+      retournant également le booléen `truncated` renvoyé par l'API GitHub lorsque l'arborescence
+      dépasse la limite de l'endpoint (FR-002, FR-003, FR-003a ; depends on T005, T007)
+- [X] T019 [P] Implémenter `src/services/input_router.py` : fonction `determiner_mode(repo_url:
       str | None, documentation_texte: str | None, documentation_fichier: bytes | None) ->
       ModeEntree` appliquant la règle "URL GitHub valide → mode dépôt (documentation ignorée et
       signalée via `source_ignoree=true`) ; sinon documentation non vide → mode documentation ;
       sinon rejet" (FR-001, research.md §8 ; depends on T005, T006)
-- [ ] T020 [P] Implémenter la fonction de masquage déterministe par catégorie RGPD (ex. email →
+- [X] T020 [P] Implémenter la fonction de masquage déterministe par catégorie RGPD (ex. email →
       `j***@***.com`, numéro national → 2 derniers chiffres visibles) dans
       `src/services/rgpd_masking.py`, appelée immédiatement après chaque détection, avant toute
       autre étape du pipeline (FR-010a, research.md §5 ; depends on T011)
-- [ ] T021 [P] Implémenter le client LLM `src/services/llm_client.py` encapsulant l'appel unique à
-      l'API Anthropic (modèle Haiku, research.md §3) : fonction `appeler_llm(prompt: str) ->
-      dict | None` retournant `None` (échec) si la réponse est vide/malformée/non-JSON, sans lever
-      d'exception non gérée (FR-016 Edge Cases ; ≤40 000 caractères de prompt, FR-008)
+- [X] T021 [P] Implémenter le client LLM `src/services/llm_client.py` encapsulant l'appel unique à
+      l'API Anthropic (modèle Haiku, température 0 pour la reproductibilité, research.md §3) :
+      fonction `appeler_llm(prompt: str) -> dict | None` retournant `None` (échec) si la réponse
+      est vide/malformée/non-JSON, sans lever d'exception non gérée (FR-016 Edge Cases ; ≤40 000
+      caractères de prompt, FR-008)
 
 **Checkpoint**: Fondations prêtes — modèles, corpus indexé, clients GitHub/LLM, routage d'entrée et
 masquage RGPD disponibles ; l'implémentation des user stories peut commencer.
@@ -154,92 +160,103 @@ un texte de documentation collé → rapport équivalent sans appel GitHub (quic
 
 ### Tests for User Story 1 (obligatoire — Principe II)
 
-- [ ] T022 [P] [US1] Test unitaire cas conforme + cas non conforme pour `determiner_mode` (URL
+- [X] T022 [P] [US1] Test unitaire cas conforme + cas non conforme pour `determiner_mode` (URL
       GitHub valide seule → mode dépôt ; documentation seule → mode documentation ; les deux fournis
       → mode dépôt avec `source_ignoree=true` ; ni l'un ni l'autre → erreur) dans
       `tests/unit/test_input_router.py` (FR-001, Edge Cases, Acceptance Scenario US1.6)
-- [ ] T023 [P] [US1] Test unitaire cas conforme + cas non conforme pour la règle de sélection de
+- [X] T023 [P] [US1] Test unitaire cas conforme + cas non conforme pour la règle de sélection de
       fichiers AI Act : README/manifeste de dépendances en premier, puis profondeur croissante, puis
       alphabétique ; ≤15 fichiers retenus avec `selection_partielle=true` si dépassement, fichier
       binaire/trop volumineux exclu ou tronqué, dans `tests/unit/test_file_selector.py` (FR-004,
       FR-006 ; depends on T024 module créé — écrit avant l'implémentation)
-- [ ] T024 [P] [US1] Test unitaire cas conforme + cas non conforme pour la sélection RGPD
+- [X] T024 [P] [US1] Test unitaire cas conforme + cas non conforme pour la sélection RGPD
       (schémas SQL/migrations/fixtures/config JSON priorisés, même règle de tri, limite 15 fichiers
       indépendante de la sélection AI Act) dans `tests/unit/test_file_selector.py` (FR-005, FR-006)
-- [ ] T025 [P] [US1] Test unitaire cas conforme + cas non conforme pour la récupération RAG sur
+- [X] T025 [P] [US1] Test unitaire cas conforme + cas non conforme pour la récupération RAG sur
       l'index figé de test (une requête connue retourne un ensemble déterministe de
       `PassageLegalRecupere` ; une requête hors sujet retourne un score de pertinence bas ou une
       liste vide) dans `tests/unit/test_retriever.py`, utilisant `src/data/legal_corpus/index.npz`
       versionné, sans réentraînement (FR-018/FR-019, plan.md Principe II)
-- [ ] T026 [P] [US1] Test d'intégration : soumission d'une URL de dépôt public (GitHub et LLM mockés
+- [X] T026 [P] [US1] Test d'intégration : soumission d'une URL de dépôt public (GitHub et LLM mockés
       via `respx`, research.md §6) produisant un rapport avec secteur/finalité/autonomie et au moins
       une citation légale, dans `tests/integration/test_evaluate_repo_mode.py` (Acceptance Scenario
       US1.1, quickstart.md Scénario 1)
-- [ ] T027 [P] [US1] Test d'intégration : soumission d'un dépôt avec schémas SQL/fixtures produisant
+- [X] T027 [P] [US1] Test d'intégration : soumission d'un dépôt avec schémas SQL/fixtures produisant
       des détections RGPD avec fichier source, dans `tests/integration/test_evaluate_repo_mode.py`
       (Acceptance Scenario US1.2)
-- [ ] T028 [P] [US1] Test d'intégration : dépôt sans fichier pertinent AI Act ni RGPD → rapport
+- [X] T028 [P] [US1] Test d'intégration : dépôt sans fichier pertinent AI Act ni RGPD → rapport
       indique explicitement l'absence d'éléments détectés, dans
       `tests/integration/test_evaluate_repo_mode.py` (Acceptance Scenario US1.3)
-- [ ] T029 [P] [US1] Test d'intégration : soumission de texte de documentation collé (sans
+- [X] T029 [P] [US1] Test d'intégration : soumission de texte de documentation collé (sans
       `repo_url`) → rapport produit, aucun appel `respx` GitHub enregistré, dans
       `tests/integration/test_evaluate_documentation_mode.py` (Acceptance Scenario US1.4,
       quickstart.md Scénario 2, SC-007)
-- [ ] T030 [P] [US1] Test d'intégration : soumission d'un fichier de documentation téléversé →
+- [X] T030 [P] [US1] Test d'intégration : soumission d'un fichier de documentation téléversé →
       contenu du fichier utilisé comme source unique, dans
       `tests/integration/test_evaluate_documentation_mode.py` (Acceptance Scenario US1.5)
-- [ ] T031 [P] [US1] Test d'intégration : soumission sans URL valide ni documentation → rejet avec
+- [X] T031 [P] [US1] Test d'intégration : soumission sans URL valide ni documentation → rejet avec
       message clair, 0 appel GitHub/LLM enregistré, dans
       `tests/integration/test_evaluate_documentation_mode.py` (Acceptance Scenario US1.6)
-- [ ] T032 [P] [US1] Test contractuel `GET /` retourne 200 avec formulaire contenant `repo_url`,
+- [X] T032 [P] [US1] Test contractuel `GET /` retourne 200 avec formulaire contenant `repo_url`,
       `documentation_texte`, `documentation_fichier` dans `tests/contract/test_get_root.py`
       (contracts/web-interface.md GET /)
+- [X] T032a [P] [US1] Test unitaire (cas négatif) affirmant qu'aucun champ de score ou de niveau
+      de risque de conformité agrégé n'existe sur `ProfilAiAct`, `ProfilProjetCombine` ni
+      `RapportFinal` (introspection des modèles Pydantic) et qu'aucune clé de ce type n'apparaît
+      dans le HTML rendu par `rendre_html`, dans `tests/unit/test_no_aggregate_risk_score.py`
+      (FR-014 — contrainte confirmée explicitement par le commanditaire, spec.md Assumptions)
 
 ### Implementation for User Story 1
 
-- [ ] T033 [US1] Implémenter `src/services/file_selector.py` : fonctions
+- [X] T033 [US1] Implémenter `src/services/file_selector.py` : fonctions
       `selectionner_fichiers_aiact(fichiers: list[FichierDepot]) -> SelectionAiAct` et
       `selectionner_fichiers_rgpd(fichiers: list[FichierDepot]) -> SelectionRgpd` appliquant la règle
       de priorité déterministe (README/manifeste d'abord, puis profondeur croissante, puis
-      alphabétique), limite de 15 par catégorie, exclusion/troncature des fichiers binaires ou trop
-      volumineux (FR-004, FR-005, FR-006 ; depends on T007, T008 ; tests T023-T024 doivent échouer
-      avant cette tâche)
-- [ ] T034 [US1] Implémenter `src/services/legal_corpus.py` : fonction `charger_corpus() ->
+      alphabétique), limite de 15 par catégorie ; un fichier binaire ou non décodable en UTF-8 est
+      exclu, un fichier décodable en texte mais dépassant à lui seul le plafond de contenu par
+      appel LLM est tronqué (jamais exclu pour ce seul motif) (FR-004, FR-005, FR-006, Edge Cases ;
+      depends on T007, T008 ; tests T023-T024 doivent échouer avant cette tâche)
+- [X] T034 [US1] Implémenter `src/services/legal_corpus.py` : fonction `charger_corpus() ->
       list[CorpusJuridique]` en lecture seule depuis `src/data/legal_corpus/corpus.json` (FR-013 ;
       depends on T009, T014)
-- [ ] T035 [US1] Implémenter `src/services/aiact_analyzer.py` : fonction `analyser(selection:
+- [X] T035 [US1] Implémenter `src/services/aiact_analyzer.py` : fonction `analyser(selection:
       SelectionAiAct, passages: list[PassageLegalRecupere]) -> ProfilAiAct` qui construit le prompt
       (contenu source + passages RAG, priorité de troncature au contenu source, research.md §7),
-      appelle `llm_client.appeler_llm`, et parse la réponse en `ProfilAiAct` avec `echec=true` si la
-      réponse est invalide/vide/inexploitable (FR-007, FR-008, FR-014, Edge Cases ; depends on T010,
-      T017, T021, T033)
-- [ ] T036 [US1] Implémenter `src/services/rgpd_scanner.py` : fonction `scanner(selection:
+      demande explicitement au LLM de choisir `niveau_autonomie_decisionnelle` parmi les 4 valeurs
+      fermées `aucune`/`assistee`/`supervisee`/`autonome` (FR-007a) et d'appeler
+      `llm_client.appeler_llm` avec une température de 0 pour la reproductibilité (research.md §3),
+      puis parse la réponse en `ProfilAiAct` avec `echec=true` si la réponse est
+      invalide/vide/inexploitable ou si la valeur d'autonomie ne fait pas partie des 4 valeurs
+      attendues (FR-007, FR-007a, FR-008, FR-014, Edge Cases ; depends on T010, T017, T021, T033)
+- [X] T036 [US1] Implémenter `src/services/rgpd_scanner.py` : fonction `scanner(selection:
       SelectionRgpd) -> list[DetectionRgpd]` appliquant les expressions régulières par catégorie
       (identité, contact, identifiant national, santé, biométrie, origine/croyances) et appelant
       immédiatement `rgpd_masking` pour produire `extrait_masque` (FR-010 ; depends on T011, T020,
       T033)
-- [ ] T037 [US1] Implémenter `src/services/report_builder.py` : fonction `combiner(mode_entree,
+- [X] T037 [US1] Implémenter `src/services/report_builder.py` : fonction `combiner(mode_entree,
       depot, documentation, profil_aiact, detections_rgpd, non_conformites, appels_llm,
-      tailles_envoyees) -> ProfilProjetCombine` fusionnant les résultats en un profil unique, avec
-      avertissements explicites (absence de détection RGPD, absence de fichier pertinent, source
-      ignorée) (FR-011, FR-012 ; depends on T013)
-- [ ] T038 [US1] Implémenter `src/services/report_builder.py::rendre_html(profil:
+      tailles_envoyees, arborescence_tronquee: bool = False) -> ProfilProjetCombine` fusionnant
+      les résultats en un profil unique, avec avertissements explicites (absence de détection
+      RGPD, absence de fichier pertinent, source ignorée, "liste de fichiers du dépôt incomplète"
+      si `arborescence_tronquee=true`) (FR-003a, FR-011, FR-012 ; depends on T013)
+- [X] T038 [US1] Implémenter `src/services/report_builder.py::rendre_html(profil:
       ProfilProjetCombine) -> RapportFinal` produisant le HTML structuré à partir d'un template
-      Jinja2 (FR-012 ; depends on T037, T042)
-- [ ] T039 [P] [US1] Créer le template Jinja2 `src/web/templates/formulaire.html` (formulaire
+      Jinja2, sans jamais introduire de champ de score/niveau de risque agrégé (FR-012, FR-014 ;
+      depends on T037, T042 ; test T032a doit échouer avant cette tâche)
+- [X] T039 [P] [US1] Créer le template Jinja2 `src/web/templates/formulaire.html` (formulaire
       `GET /` : `repo_url`, `documentation_texte`, `documentation_fichier`, bouton de soumission
       unique) (contracts/web-interface.md GET /)
-- [ ] T040 [P] [US1] Créer le template Jinja2 `src/web/templates/rapport.html` (sections : profil AI
+- [X] T040 [P] [US1] Créer le template Jinja2 `src/web/templates/rapport.html` (sections : profil AI
       Act avec citations, détections RGPD avec extraits masqués, absence explicite si vide, nombre
       d'appels LLM et taille envoyée, bouton de téléchargement) (FR-012, FR-015, contracts/web-
       interface.md POST /evaluate succès complet)
-- [ ] T041 [P] [US1] Créer le template Jinja2 `src/web/templates/erreur.html` (message d'erreur clair
+- [X] T041 [P] [US1] Créer le template Jinja2 `src/web/templates/erreur.html` (message d'erreur clair
       réutilisable pour dépôt privé/inexistant, rate limit GitHub, documentation vide/illisible,
       aucune entrée exploitable) (contracts/web-interface.md, tableau des réponses d'erreur)
-- [ ] T042 [US1] Implémenter `src/web/app.py` : application FastAPI avec route `GET /` rendant
+- [X] T042 [US1] Implémenter `src/web/app.py` : application FastAPI avec route `GET /` rendant
       `formulaire.html` (contracts/web-interface.md GET / ; depends on T039 ; tests T032 doit
       échouer avant cette tâche)
-- [ ] T043 [US1] Implémenter la route `POST /evaluate` dans `src/web/app.py` orchestrant le pipeline
+- [X] T043 [US1] Implémenter la route `POST /evaluate` dans `src/web/app.py` orchestrant le pipeline
       complet : `input_router.determiner_mode` → (mode dépôt: `github_client.verifier_accessibilite`
       + `lister_fichiers` + `file_selector` ; mode documentation: contenu direct, troncature à 40 000
       caractères si nécessaire) → `retriever.rechercher` → `aiact_analyzer.analyser` →
@@ -469,33 +486,38 @@ Scénario 6).
       respecté en mesurant la durée du scénario 1 de quickstart.md sur un dépôt réel de taille
       représentative
 - [ ] T079 [P] Créer un `Dockerfile` à la racine (image `python:3.11-slim`, installe
-      `requirements.txt`, copie `src/`, expose le port `7860` — port attendu par Hugging Face
-      Spaces — et lance `uvicorn src.web.app:app --host 0.0.0.0 --port 7860`), pour un déploiement
-      public gratuit sur Hugging Face Spaces (SDK Docker) plutôt que sur une plateforme serverless
+      `requirements.txt`, copie `src/`, expose le port `8000` et lance
+      `uvicorn src.web.app:app --host 0.0.0.0 --port 8000`), pour un déploiement conteneurisé sur
+      Azure App Service (Web App for Containers) plutôt que sur une plateforme serverless
       incompatible avec le budget de temps (<3 min, SC-001) et la taille du modèle d'embedding local
       (research.md §7)
-- [ ] T080 Ajouter le bloc de métadonnées YAML Hugging Face Spaces en tête du `README.md` à la
-      racine (`sdk: docker`, `app_port: 7860`, `title`, `emoji`) pour que le Space se construise et
-      s'affiche correctement une fois poussé sur `huggingface.co/spaces/<user>/<space-name>` ;
-      dépend de T076 (depends on T076, T079)
+- [ ] T080 Provisionner les ressources Azure (via le portail ou `az cli`, sur l'abonnement crédits
+      étudiants) : un groupe de ressources, un plan App Service Linux (tier `B1` minimum pour
+      supporter le modèle d'embedding local — le tier gratuit `F1` est trop limité en mémoire/CPU),
+      et une Web App en mode conteneur personnalisé (`az webapp create --deployment-container-image-name`) ;
+      définir l'application setting `WEBSITES_PORT=8000` pour qu'Azure route le trafic vers le port
+      exposé par le `Dockerfile` ; dépend de T079 (depends on T079)
 - [ ] T081 Documenter dans `README.md` la configuration du secret `ANTHROPIC_API_KEY` via
-      Settings → Repository secrets du Space (jamais committé en clair), et le comportement de mise
-      en veille après inactivité du tier gratuit (réveil automatique au prochain visiteur, cold
-      start de quelques dizaines de secondes) (depends on T080)
-- [ ] T082 Déployer le Space (créer le repo `huggingface.co/spaces/<user>/<space-name>`, SDK
-      Docker, pousser le contenu du dépôt, vérifier que le build passe et que l'URL publique
-      `https://<user>-<space-name>.hf.space` sert le formulaire `GET /`) et valider qu'aucune
-      authentification n'est requise pour qu'un visiteur externe y accède (Space public par défaut)
-      (depends on T081)
-- [ ] T083 Configurer le déploiement continu vers Hugging Face Spaces depuis le dépôt GitHub
-      (dont l'utilisateur n'est pas propriétaire, seul un accès "Secrets and variables → Actions"
-      est disponible — pas d'accès admin pour lier le Space directement au repo) : créer un token
-      Hugging Face (rôle "Write") sur `huggingface.co/settings/tokens`, l'ajouter comme secret
-      GitHub Actions `HF_TOKEN` (Settings → Secrets and variables → Actions), et ajouter le workflow
-      `.github/workflows/deploy-hf-space.yml` qui, à chaque push sur `main`, pousse le contenu du
-      dépôt vers `huggingface.co/spaces/<user>/<space-name>` via `git push hf HEAD:main --force`
-      avec le token en variable d'environnement ; vérifier qu'un push déclenche bien une
-      reconstruction automatique du Space (depends on T082)
+      Configuration → Application settings de la Web App Azure (jamais committé en clair), ainsi que
+      le comportement du tier choisi (pas de mise en veille sur `B1` avec "Always On" activé,
+      contrairement à un tier gratuit/serverless) (depends on T080)
+- [ ] T082 Déployer l'image (build de l'image Docker, push vers Azure Container Registry ou
+      déploiement direct via `az webapp up`/`az webapp config container set`, vérifier que le build
+      et le démarrage du conteneur passent) et valider que l'URL publique
+      `https://<app-name>.azurewebsites.net` sert le formulaire `GET /` en HTTPS sans authentification
+      requise pour un visiteur externe (depends on T081)
+- [ ] T083 Configurer le déploiement continu vers Azure App Service depuis le dépôt GitHub : créer
+      un principal de service Azure (`az ad sp create-for-rbac` ou profil de publication téléchargé
+      depuis le portail Azure), l'ajouter comme secret GitHub Actions (`AZURE_WEBAPP_PUBLISH_PROFILE`
+      ou `AZURE_CREDENTIALS`), et ajouter le workflow `.github/workflows/deploy-azure.yml` qui, à
+      chaque push sur `main`, construit l'image Docker et la déploie sur la Web App via l'action
+      `azure/webapps-deploy@v3` (ou `az webapp deploy`) ; vérifier qu'un push déclenche bien une
+      reconstruction et un redéploiement automatiques (depends on T082)
+- [ ] T084 Vérifier `SC-004` (coût LLM cumulé sous 10€ sur 100 évaluations) : exécuter le scénario
+      1 ou 2 de `quickstart.md` un nombre représentatif de fois, sommer le champ
+      `taille_envoyee_par_appel` exposé (FR-015) à travers ces exécutions, appliquer le tarif du
+      modèle Haiku (research.md §3) pour projeter le coût sur 100 évaluations, et consigner le
+      résultat (quickstart.md "Vérification du budget global (SC-004)" ; depends on T077)
 
 ---
 
@@ -617,3 +639,7 @@ Avec plusieurs développeurs :
 - S'arrêter à chaque checkpoint pour valider la story indépendamment
 - Éviter : tâches vagues, conflits sur un même fichier, dépendances cross-story qui casseraient
   l'indépendance de test de chaque story
+- Tâches `Txxxa` (T004a, T032a) : ajoutées après la revue `/speckit-analyze` du 2026-09-16 pour
+  combler des trous de couverture (CI, test négatif FR-014) sans renuméroter l'ensemble du
+  fichier ; elles suivent la même règle d'exécution que leur voisine numérique (T004a avant la fin
+  de Setup, T032a avant T035, Principe II)
