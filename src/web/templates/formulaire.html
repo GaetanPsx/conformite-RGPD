@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Pipeline d'analyse de conformité (AI Act / RGPD)</title>
+</head>
+<body>
+  <h1>Analyse de conformité AI Act / RGPD</h1>
+  <p>Soumettez soit l'URL d'un dépôt GitHub public, soit une documentation de projet (texte collé
+     ou fichier téléversé). Une seule évaluation à la fois.</p>
+  <form method="post" action="/evaluate" enctype="multipart/form-data">
+    <fieldset>
+      <legend>Mode dépôt</legend>
+      <label for="repo_url">URL du dépôt GitHub public</label>
+      <input type="text" id="repo_url" name="repo_url" placeholder="https://github.com/owner/repo">
+    </fieldset>
+    <fieldset>
+      <legend>Mode documentation</legend>
+      <label for="documentation_texte">Documentation collée</label>
+      <textarea id="documentation_texte" name="documentation_texte" rows="8" cols="60"></textarea>
+      <label for="documentation_fichier">Ou fichier de documentation</label>
+      <input type="file" id="documentation_fichier" name="documentation_fichier">
+    </fieldset>
+    <button type="submit">Lancer l'évaluation</button>
+  </form>
+</body>
+</html>

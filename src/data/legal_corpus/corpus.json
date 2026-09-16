@@ -1,0 +1,62 @@
+[
+  {
+    "id_reference": "RGPD-ART-9",
+    "theme": "sante",
+    "texte": "RGPD, Article 9 (Traitement portant sur des categories particulieres de donnees a caractere personnel) : Le traitement des donnees a caractere personnel qui revele l'origine raciale ou ethnique, les opinions politiques, les convictions religieuses ou philosophiques ou l'appartenance syndicale, ainsi que le traitement des donnees genetiques, des donnees biometriques aux fins d'identifier une personne physique de maniere unique, des donnees concernant la sante ou des donnees concernant la vie sexuelle ou l'orientation sexuelle d'une personne physique sont interdits, sauf si une des conditions specifiques de l'article 9, paragraphe 2 (par exemple le consentement explicite ou une base legale explicite prevue par le droit de l'Union ou d'un Etat membre pour des motifs d'interet public important) est remplie."
+  },
+  {
+    "id_reference": "RGPD-ART-6",
+    "theme": "base_legale",
+    "texte": "RGPD, Article 6 (Liceite du traitement) : Le traitement n'est licite que si, et dans la mesure ou, au moins une des conditions suivantes est remplie : la personne concernee a consenti au traitement, le traitement est necessaire a l'execution d'un contrat, le traitement est necessaire au respect d'une obligation legale, le traitement est necessaire a la sauvegarde des interets vitaux, le traitement est necessaire a l'execution d'une mission d'interet public, ou le traitement est necessaire aux fins des interets legitimes poursuivis par le responsable du traitement."
+  },
+  {
+    "id_reference": "RGPD-ART-5",
+    "theme": "minimisation",
+    "texte": "RGPD, Article 5 (Principes relatifs au traitement des donnees a caractere personnel) : Les donnees a caractere personnel doivent etre adequates, pertinentes et limitees a ce qui est necessaire au regard des finalites pour lesquelles elles sont traitees (minimisation des donnees) ; elles doivent etre traitees de maniere licite, loyale et transparente au regard de la personne concernee."
+  },
+  {
+    "id_reference": "RGPD-ART-32",
+    "theme": "securite",
+    "texte": "RGPD, Article 32 (Securite du traitement) : Le responsable du traitement et le sous-traitant mettent en oeuvre les mesures techniques et organisationnelles appropriees afin de garantir un niveau de securite adapte au risque, y compris entre autres, selon les besoins, la pseudonymisation et le chiffrement des donnees a caractere personnel."
+  },
+  {
+    "id_reference": "RGPD-ART-4-14",
+    "theme": "biometrie",
+    "texte": "RGPD, Article 4, point 14 (Definitions) : donnees biometriques, les donnees a caractere personnel resultant d'un traitement technique specifique, relatives aux caracteristiques physiques, physiologiques ou comportementales d'une personne physique, qui permettent ou confirment son identification unique, telles que des images faciales ou des donnees dactyloscopiques."
+  },
+  {
+    "id_reference": "RGPD-ART-87",
+    "theme": "identifiant_national",
+    "texte": "RGPD, Article 87 (Traitement du numero d'identification national) : Les Etats membres peuvent determiner plus precisement les conditions specifiques auxquelles est soumis le traitement d'un numero d'identification national ou de tout autre moyen d'identification revetant un caractere general, afin de garantir des garanties appropriees pour les droits et libertes de la personne concernee."
+  },
+  {
+    "id_reference": "AIACT-ART-6",
+    "theme": "classification_risque",
+    "texte": "Reglement IA (AI Act), Article 6 (Regles de classification pour les systemes d'IA a haut risque) : un systeme d'IA est considere comme a haut risque lorsqu'il est destine a etre utilise comme composant de securite d'un produit, ou lorsqu'il est lui-meme un produit, couvert par la legislation d'harmonisation de l'Union listee a l'annexe I, ou lorsqu'il figure a l'annexe III (par exemple systemes utilises pour l'evaluation de la solvabilite, le recrutement, ou l'acces a des services essentiels)."
+  },
+  {
+    "id_reference": "AIACT-ANNEXE-III",
+    "theme": "haut_risque",
+    "texte": "Reglement IA (AI Act), Annexe III (Systemes d'IA a haut risque vises a l'article 6, paragraphe 2) : liste notamment les systemes d'IA destines a etre utilises pour le recrutement ou la selection de personnes physiques, l'evaluation de la solvabilite ou de la note de credit, l'acces aux prestations et services publics essentiels, et les dispositifs medicaux utilisant l'IA a des fins de diagnostic."
+  },
+  {
+    "id_reference": "AIACT-ART-13",
+    "theme": "transparence",
+    "texte": "Reglement IA (AI Act), Article 13 (Transparence et fourniture d'informations aux utilisateurs) : Les systemes d'IA a haut risque sont concus et developpes de maniere a garantir un fonctionnement suffisamment transparent pour permettre aux utilisateurs d'interpreter les sorties du systeme et de les utiliser de maniere appropriee, avec une notice d'utilisation comprenant des informations concises, completes, correctes et claires."
+  },
+  {
+    "id_reference": "AIACT-ART-14",
+    "theme": "supervision_humaine",
+    "texte": "Reglement IA (AI Act), Article 14 (Controle humain) : Les systemes d'IA a haut risque sont concus et developpes de maniere a pouvoir etre effectivement controles par des personnes physiques pendant la periode d'utilisation du systeme, y compris au moyen d'outils d'interface homme-machine appropries, afin de prevenir ou de minimiser les risques pour la sante, la securite ou les droits fondamentaux."
+  },
+  {
+    "id_reference": "AIACT-ART-52",
+    "theme": "autonomie_decisionnelle",
+    "texte": "Reglement IA (AI Act), Article 52 (Obligations de transparence pour certains systemes d'IA) : lors de l'interaction avec un systeme d'IA, les personnes physiques sont informees qu'elles interagissent avec un systeme d'IA, sauf si cela est evident, en particulier lorsque le systeme prend des decisions ou assiste une prise de decision de maniere autonome ou avec une supervision humaine limitee."
+  },
+  {
+    "id_reference": "AIACT-ART-10",
+    "theme": "gouvernance_donnees",
+    "texte": "Reglement IA (AI Act), Article 10 (Donnees et gouvernance des donnees) : les systemes d'IA a haut risque qui utilisent des techniques impliquant l'entrainement de modeles avec des donnees sont developpes sur la base de jeux de donnees d'entrainement, de validation et de test soumis a des pratiques appropriees en matiere de gouvernance et de gestion des donnees, notamment un examen des biais possibles."
+  }
+]
