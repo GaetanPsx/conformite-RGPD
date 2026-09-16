@@ -1,9 +1,10 @@
-# Phase 0 Research: Pipeline d'extraction et d'analyse de conformité de dépôt GitHub
+# Phase 0 Research: Pipeline d'analyse de conformité (dépôt GitHub ou documentation de projet)
 
 **Feature**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md)
 
 Toutes les inconnues de la section Technical Context du plan ont été résolues ci-dessous ; aucun
-`NEEDS CLARIFICATION` ne subsiste.
+`NEEDS CLARIFICATION` ne subsiste. Sections 7 et 8 ajoutées lors de l'amendement du 2026-09-16
+(RAG, second mode d'entrée).
 
 ## 1. Framework web
 
@@ -91,8 +92,62 @@ Toutes les inconnues de la section Technical Context du plan ont été résolues
   choix de client) ; appels réels dans un environnement de test dédié (rejeté : coût récurrent et
   non-déterminisme, contraire à l'Auditabilité du Principe III).
 
+## 7. Composant RAG pour la récupération des citations légales
+
+- **Decision**: `sentence-transformers` avec un modèle d'embedding open-source léger multilingue
+  (ex. famille `paraphrase-multilingual-MiniLM-L12-v2`, à confirmer/ajuster en tâche
+  d'implémentation selon la couverture FR/EN du corpus), exécuté **localement**. Un script hors
+  ligne (`services/legal_rag/build_index.py`) encode une fois chaque passage du corpus juridique
+  (découpé par article/annexe ou par paragraphe si un article est long) et écrit les vecteurs
+  résultants dans un fichier plat versionné (`src/data/legal_corpus/index.*`) avec, pour chaque
+  vecteur, sa référence (`id_reference`) et son texte. À l'exécution, `retriever.py` encode
+  uniquement la requête (profil/texte source condensé) avec le même modèle, puis calcule une
+  similarité cosinus (`numpy`) contre les vecteurs pré-calculés pour retourner le top-N (N borné,
+  ex. 5 à 10) des passages les plus pertinents.
+- **Rationale**: FR-018 exige une indexation/recherche sans appel LLM ; FR-019 exige que seuls les
+  passages effectivement récupérés soient citables. Un modèle d'embedding local répond aux deux
+  sans coût API ni dépendance réseau à l'exécution — cohérent avec le budget (SC-004) puisque
+  l'indexation ne se fait qu'une fois, hors ligne, et la recherche à l'exécution n'appelle jamais
+  de service payant. Une recherche cosinus en mémoire via `numpy` suffit à la taille attendue d'un
+  corpus AI Act + RGPD (quelques centaines de passages au plus), évitant d'introduire une base
+  vectorielle externe (FAISS ou autre) à héberger — cohérent avec le Principe V (simplicité) et
+  avec l'absence de persistance/infrastructure supplémentaire (FR-017 ne s'applique pas à l'index,
+  qui est un artefact statique du corpus, pas une donnée de requête).
+- **Alternatives considered**: Appel à une API d'embedding payante (ex. API Anthropic/OpenAI
+  embeddings) — écarté : introduirait un coût récurrent par évaluation et une dépendance réseau
+  supplémentaire non nécessaire pour un corpus fixe qui peut être encodé une seule fois hors ligne.
+  Recherche purement lexicale (BM25/TF-IDF) — plus simple encore et écartée uniquement parce que le
+  commanditaire a explicitement demandé un RAG à base d'embeddings ; reste une alternative de repli
+  si la qualité de récupération sémantique s'avère insuffisante en pratique. Base vectorielle
+  externe (ex. Qdrant, Pinecone) — écartée : sur-dimensionnée pour un corpus de taille modeste et
+  contraire au Principe V (nouvelle infrastructure à héberger et maintenir).
+- **Conséquence sur FR-007/FR-008**: le prompt de l'appel LLM unique inclut désormais le contenu
+  source ET les passages récupérés ; les deux sont comptés dans le plafond de 40 000 caractères
+  (FR-008), avec priorité de troncature au contenu source si nécessaire (les passages récupérés,
+  plus courts et ciblés, sont conservés en priorité pour garantir des citations ancrées).
+
+## 8. Second mode d'entrée : documentation fournie directement
+
+- **Decision**: Le formulaire web accepte soit un champ URL (mode dépôt), soit un champ texte
+  libre et/ou un champ d'upload de fichier (mode documentation) ; `services/input_router.py`
+  détermine le mode selon une règle simple et déterministe : une URL GitHub valide dans le champ
+  URL → mode dépôt (le contenu du champ documentation, s'il est rempli en parallèle, est ignoré et
+  signalé, cf. Assumptions du spec) ; sinon, un contenu non vide dans le champ documentation ou un
+  fichier téléversé → mode documentation ; ni l'un ni l'autre → rejet (FR-001, Edge Cases).
+- **Rationale**: Réutilise directement la même conclusion de FR-001 (un seul point d'entrée
+  formulaire, un seul mode actif par soumission) sans complexifier le contrat web avec des routes
+  séparées. En mode documentation, `github_client.py` et `file_selector.py` ne sont simplement pas
+  invoqués (FR-002a, FR-006a) ; le contenu fourni remplace directement `SelectionAiAct`/
+  `SelectionRgpd` comme source, avec la même règle de troncature au plafond de 40 000 caractères.
+- **Alternatives considered**: Deux formulaires/pages séparés selon le mode — écarté, ajoute une
+  surface d'interface sans bénéfice fonctionnel (contraire au Principe V et à la demande explicite
+  de ne pas complexifier l'UI). Détection automatique du mode par heuristique sur le contenu du
+  champ texte (ex. deviner si c'est une URL) plutôt que deux champs distincts — écarté au profit de
+  deux champs explicites, plus robuste et sans ambiguïté pour l'utilisateur et pour les tests.
+
 ## Résumé
 
-Toutes les décisions techniques sont alignées avec les contraintes dures du spec (FR-002, FR-006,
-FR-008, FR-009, FR-010, FR-017) et avec les cinq principes de la constitution. Aucun point ne
-nécessite d'arbitrage supplémentaire avant la conception détaillée (Phase 1).
+Toutes les décisions techniques sont alignées avec les contraintes dures du spec (FR-001, FR-002,
+FR-006, FR-008, FR-009, FR-010, FR-013, FR-017, FR-018, FR-019) et avec les cinq principes de la
+constitution. Aucun point ne nécessite d'arbitrage supplémentaire avant la conception détaillée
+(Phase 1).
