@@ -1,36 +1,23 @@
-"""Helpers partages pour les tests d'integration : mocks GitHub et Anthropic via respx.
+"""Helpers partages pour les tests d'integration : mocks GitHub et OpenAI via respx.
 
 Un seul routeur respx par test (pour eviter les conflits d'interception imbriques) : les tests
 ouvrent `with respx.mock() as mock:` puis appellent `add_github_routes(mock, ...)` et/ou
-`add_anthropic_route(mock, ...)` pour enregistrer les routes necessaires.
+`add_llm_route(mock, ...)` pour enregistrer les routes necessaires.
+
+Les fixtures autouse (variables d'environnement, reinitialisation des compteurs/rate limiting)
+sont definies dans `tests/conftest.py` (partagees par toute la suite, y compris les tests
+contract qui exercent aussi le pipeline complet).
 """
 
 from __future__ import annotations
 
 import json
-import os
 
-import pytest
 from httpx import Response
-
-from src.services import llm_client
-
-
-@pytest.fixture(autouse=True)
-def _env_and_counters():
-    os.environ.setdefault("ANTHROPIC_API_KEY", "test-key-not-real")
-    # Le modele d'embedding local doit deja etre en cache (build_index.py, T016) ; force le mode
-    # hors ligne pour que respx (qui mocke exclusivement GitHub/Anthropic dans ces tests) n'ait pas
-    # a intercepter les requetes HTTP de huggingface_hub.
-    os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
-    llm_client.reset_compteurs()
-    yield
-    llm_client.reset_compteurs()
 
 GITHUB_API_BASE = "https://api.github.com"
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com"
-ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages"
+OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
 DEFAULT_CONTENTS = {
     "README.md": "# Projet\nSysteme d'aide au diagnostic medical par IA dans le secteur de la sante.",
@@ -50,15 +37,19 @@ DEFAULT_LLM_PAYLOAD = {
 }
 
 
-def anthropic_response_body(payload: dict) -> dict:
+def openai_response_body(payload: dict) -> dict:
     return {
-        "id": "msg_test",
-        "type": "message",
-        "role": "assistant",
-        "content": [{"type": "text", "text": json.dumps(payload)}],
-        "model": "claude-haiku-4-5",
-        "stop_reason": "end_turn",
-        "usage": {"input_tokens": 10, "output_tokens": 10},
+        "id": "chatcmpl-test",
+        "object": "chat.completion",
+        "model": "gpt-4o-mini",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": json.dumps(payload)},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 10, "total_tokens": 20},
     }
 
 
@@ -99,11 +90,11 @@ def add_github_routes(
         )
 
 
-def add_anthropic_route(mock, payload: dict | None = None, status: int = 200):
+def add_llm_route(mock, payload: dict | None = None, status: int = 200):
     payload = payload if payload is not None else DEFAULT_LLM_PAYLOAD
     if status != 200:
-        mock.post(ANTHROPIC_MESSAGES_URL).mock(return_value=Response(status, json={}))
+        mock.post(OPENAI_CHAT_URL).mock(return_value=Response(status, json={}))
         return
-    mock.post(ANTHROPIC_MESSAGES_URL).mock(
-        return_value=Response(200, json=anthropic_response_body(payload))
+    mock.post(OPENAI_CHAT_URL).mock(
+        return_value=Response(200, json=openai_response_body(payload))
     )
