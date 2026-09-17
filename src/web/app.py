@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
@@ -31,7 +32,19 @@ from src.services.legal_rag import retriever
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
-app = FastAPI(title="Pipeline d'analyse de conformite AI Act / RGPD")
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    # Precharge le modele d'embedding local au demarrage plutot qu'a la premiere requete
+    # /evaluate, pour eviter de faire payer le cold start (chargement des poids) a l'utilisateur.
+    try:
+        index = retriever._charger_index()
+        retriever._charger_modele(index["model_name"])
+    except FileNotFoundError:
+        pass
+    yield
+
+
+app = FastAPI(title="Pipeline d'analyse de conformite AI Act / RGPD", lifespan=_lifespan)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 MAX_DOC_CHARS = 40_000
