@@ -282,46 +282,46 @@ référence légale correspondant à un passage réellement récupéré (quickst
 
 ### Tests for User Story 2 (obligatoire — Principe II)
 
-- [ ] T044 [P] [US2] Test unitaire cas conforme + cas non conforme pour la production de
+- [X] T044 [P] [US2] Test unitaire cas conforme + cas non conforme pour la production de
       `NonConformite` à partir d'un `ProfilAiAct`/`DetectionRgpd` et d'une liste de
       `PassageLegalRecupere` : un aspect avec passage pertinent suffisant produit une
       `NonConformite.passage_source` référençant ce passage ; un aspect sans passage suffisamment
       pertinent NE produit PAS de `NonConformite` (dans
       `tests/unit/test_aiact_analyzer_nonconformites.py`) (FR-013, FR-019, data-model.md
       NonConformite invariant)
-- [ ] T045 [P] [US2] Test d'intégration : dépôt/documentation avec caractéristique de non-conformité
+- [X] T045 [P] [US2] Test d'intégration : dépôt/documentation avec caractéristique de non-conformité
       connue (absence de base légale pour données de santé, présente dans le corpus de test T014) →
       rapport contient une `NonConformite` dont `passage_source` correspond à un `id_reference`
       listé dans les `PassageLegalRecupere` réellement retournés pour cette évaluation, dans
       `tests/integration/test_evaluate_nonconformites.py` (Acceptance Scenarios US2.1–2, quickstart.md
       Scénario 3)
-- [ ] T046 [P] [US2] Test d'intégration : évaluation sans caractéristique de non-conformité couverte
+- [X] T046 [P] [US2] Test d'intégration : évaluation sans caractéristique de non-conformité couverte
       par le corpus de test → rapport indique explicitement l'absence de point identifié, dans
       `tests/integration/test_evaluate_nonconformites.py` (Acceptance Scenario US2.3, quickstart.md
       Scénario 3 point 4)
-- [ ] T047 [P] [US2] Test d'intégration : aspect détecté pour lequel aucun passage RAG suffisamment
+- [X] T047 [P] [US2] Test d'intégration : aspect détecté pour lequel aucun passage RAG suffisamment
       pertinent n'est récupéré → aspect non transformé en non-conformité inventée, rapport signale
       l'absence de référence disponible, dans `tests/integration/test_evaluate_nonconformites.py`
       (Acceptance Scenario US2.4)
 
 ### Implementation for User Story 2
 
-- [ ] T048 [US2] Étendre `src/services/aiact_analyzer.py::analyser` pour que le prompt LLM demande
+- [X] T048 [US2] Étendre `src/services/aiact_analyzer.py::analyser` pour que le prompt LLM demande
       également une liste de points de non-conformité potentiels, chacun rattaché explicitement à un
       `id_reference` parmi les `passages` fournis dans l'appel, et parser la réponse en
       `list[NonConformite]` (`origine="profil_aiact"`), en rejetant toute non-conformité dont le
       `passage_source` ne figure pas dans les passages effectivement transmis (FR-007, FR-013,
       FR-019 ; depends on T035 ; test T044 doit échouer avant cette tâche)
-- [ ] T049 [US2] Étendre `src/services/rgpd_scanner.py` (ou ajouter une fonction dédiée dans
+- [X] T049 [US2] Étendre `src/services/rgpd_scanner.py` (ou ajouter une fonction dédiée dans
       `report_builder.py`) pour associer chaque `DetectionRgpd` pertinente à un passage RAG récupéré
       via `retriever.rechercher` sur le thème de la catégorie détectée, produisant des
       `NonConformite` supplémentaires (`origine="detection_rgpd"`) uniquement quand un passage
       suffisamment pertinent existe (FR-013, FR-019 ; depends on T017, T036)
-- [ ] T050 [US2] Intégrer la fusion des `NonConformite` (profil AI Act + détections RGPD) dans
+- [X] T050 [US2] Intégrer la fusion des `NonConformite` (profil AI Act + détections RGPD) dans
       `src/services/report_builder.py::combiner`, avec avertissement explicite "aucune non-conformité
       identifiée" si la liste est vide (FR-012, US2 Acceptance Scenario 3 ; depends on T037, T048,
       T049)
-- [ ] T051 [US2] Mettre à jour `src/web/templates/rapport.html` pour afficher la section
+- [X] T051 [US2] Mettre à jour `src/web/templates/rapport.html` pour afficher la section
       non-conformités (description en langage clair + référence légale, ou message d'absence
       explicite) (FR-012 ; depends on T040, T050)
 
@@ -341,15 +341,15 @@ compteurs exposés qu'au maximum 2 appels LLM sont effectués et qu'aucun appel 
 
 ### Tests for User Story 3 (obligatoire — Principe II)
 
-- [ ] T052 [P] [US3] Test unitaire cas conforme + cas non conforme pour le plafonnement à 40 000
+- [X] T052 [P] [US3] Test unitaire cas conforme + cas non conforme pour le plafonnement à 40 000
       caractères dans `aiact_analyzer.py` : contenu source + passages RAG cumulés ≤40 000 → envoyé
       tel quel ; dépassement → contenu source tronqué en priorité (passages RAG conservés), dans
       `tests/unit/test_aiact_analyzer_budget.py` (FR-008, research.md §7 conséquence)
-- [ ] T053 [P] [US3] Test unitaire cas conforme + cas non conforme pour le compteur
+- [X] T053 [P] [US3] Test unitaire cas conforme + cas non conforme pour le compteur
       `appels_llm_effectues` : un appel LLM réussi incrémente le compteur à 1 ; un dépôt volumineux
       (>15 fichiers pertinents par catégorie) ne déclenche jamais plus de 2 appels au total, dans
       `tests/unit/test_llm_budget.py` (FR-009)
-- [ ] T054 [P] [US3] Test d'intégration : dépôt de plusieurs centaines de fichiers → sélections
+- [X] T054 [P] [US3] Test d'intégration : dépôt de plusieurs centaines de fichiers → sélections
       AI Act et RGPD bornées à 15 fichiers chacune avec `selection_partielle=true`, au maximum 2
       appels LLM comptabilisés, aucun appel >40 000 caractères, recherche RAG absente du compteur
       LLM, dans `tests/integration/test_evaluate_budget.py` (Acceptance Scenarios US3.1–4,
@@ -357,15 +357,15 @@ compteurs exposés qu'au maximum 2 appels LLM sont effectués et qu'aucun appel 
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Implémenter le plafonnement de taille dans `src/services/aiact_analyzer.py` :
+- [X] T055 [US3] Implémenter le plafonnement de taille dans `src/services/aiact_analyzer.py` :
       fonction `construire_prompt(selection, passages) -> str` qui tronque en priorité le contenu
       source (fichiers ou documentation) pour respecter ≤40 000 caractères cumulés, en conservant les
       passages RAG (FR-008 ; depends on T035 ; test T052 doit échouer avant cette tâche)
-- [ ] T056 [US3] Implémenter le comptage `appels_llm_effectues` et `taille_envoyee_par_appel` dans
+- [X] T056 [US3] Implémenter le comptage `appels_llm_effectues` et `taille_envoyee_par_appel` dans
       `src/services/llm_client.py::appeler_llm`, propagé jusqu'à `ProfilProjetCombine` via
       `report_builder.combiner` (FR-009, FR-015 ; depends on T021, T037 ; test T053 doit échouer
       avant cette tâche)
-- [ ] T057 [US3] Mettre à jour `src/web/templates/rapport.html` pour afficher le nombre d'appels LLM
+- [X] T057 [US3] Mettre à jour `src/web/templates/rapport.html` pour afficher le nombre d'appels LLM
       effectués et la taille envoyée par appel (FR-015 ; depends on T040, T056)
 
 **Checkpoint**: User Stories 1, 2 ET 3 fonctionnelles indépendamment (budget LLM vérifiable et
@@ -383,29 +383,29 @@ Scénario 5).
 
 ### Tests for User Story 4 (obligatoire — Principe II, une paire conforme/non conforme par catégorie)
 
-- [ ] T058 [P] [US4] Test unitaire cas conforme (motif email valide détecté) + cas non conforme
+- [X] T058 [P] [US4] Test unitaire cas conforme (motif email valide détecté) + cas non conforme
       (texte sans motif email → aucune détection) pour la catégorie `contact` dans
       `tests/unit/test_rgpd_scanner_contact.py` (FR-010, SC-005)
-- [ ] T059 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `identite`
+- [X] T059 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `identite`
       (ex. nom complet associé à un identifiant structuré) dans
       `tests/unit/test_rgpd_scanner_identite.py` (FR-010, SC-005)
-- [ ] T060 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie
+- [X] T060 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie
       `identifiant_national` (ex. numéro de sécurité sociale français) dans
       `tests/unit/test_rgpd_scanner_identifiant_national.py` (FR-010, SC-005)
-- [ ] T061 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `sante` (ex.
+- [X] T061 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `sante` (ex.
       mots-clés/colonnes de données de santé dans un schéma) dans
       `tests/unit/test_rgpd_scanner_sante.py` (FR-010, SC-005)
-- [ ] T062 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `biometrie`
+- [X] T062 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie `biometrie`
       (ex. colonnes/motifs d'empreinte, reconnaissance faciale) dans
       `tests/unit/test_rgpd_scanner_biometrie.py` (FR-010, SC-005)
-- [ ] T063 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie
+- [X] T063 [P] [US4] Test unitaire cas conforme + cas non conforme pour la catégorie
       `origine_croyances` (ex. mots-clés d'origine ethnique/religion dans des fixtures) dans
       `tests/unit/test_rgpd_scanner_origine_croyances.py` (FR-010, SC-005)
-- [ ] T064 [P] [US4] Test unitaire vérifiant qu'aucune valeur brute complète n'apparaît dans
+- [X] T064 [P] [US4] Test unitaire vérifiant qu'aucune valeur brute complète n'apparaît dans
       `DetectionRgpd.extrait_masque` pour chacune des 6 catégories (assertion que la valeur d'entrée
       connue n'est jamais une sous-chaîne exacte du masque produit) dans
       `tests/unit/test_rgpd_masking.py` (FR-010a)
-- [ ] T065 [P] [US4] Test d'intégration : contenu de test avec motifs connus des 3 catégories
+- [X] T065 [P] [US4] Test d'intégration : contenu de test avec motifs connus des 3 catégories
       (email, numéro de sécurité sociale, identifiant de santé) et contenu sans motif → détections
       correctes avec extrait masqué et source, compteur `appels_llm_effectues` inchangé par cette
       étape, dans `tests/integration/test_evaluate_rgpd_scan.py` (Acceptance Scenarios US4.1–2,
@@ -413,12 +413,12 @@ Scénario 5).
 
 ### Implementation for User Story 4
 
-- [ ] T066 [US4] Implémenter dans `src/services/rgpd_scanner.py` les expressions régulières pour les
+- [X] T066 [US4] Implémenter dans `src/services/rgpd_scanner.py` les expressions régulières pour les
       6 catégories (`identite`, `contact`, `identifiant_national`, `sante`, `biometrie`,
       `origine_croyances`), une constante nommée par catégorie pour l'audit (`DetectionRgpd.motif`)
       (FR-010, research.md §4 ; depends on T036 déjà créé en Phase 3 — ici on complète la couverture
       des 6 catégories ; tests T058-T064 doivent échouer avant cette tâche)
-- [ ] T067 [US4] Compléter `src/services/rgpd_masking.py` avec une fonction de masquage dédiée par
+- [X] T067 [US4] Compléter `src/services/rgpd_masking.py` avec une fonction de masquage dédiée par
       catégorie (pas seulement email/numéro national) garantissant qu'aucune valeur brute complète
       n'est retournée pour les 6 catégories (FR-010a ; depends on T020 ; test T064 doit échouer avant
       cette tâche)
@@ -438,11 +438,11 @@ Scénario 6).
 
 ### Tests for User Story 5 (obligatoire — Principe II)
 
-- [ ] T068 [P] [US5] Test contractuel : après un `POST /evaluate` réussi, le téléchargement (bouton/
+- [X] T068 [P] [US5] Test contractuel : après un `POST /evaluate` réussi, le téléchargement (bouton/
       requête du même cycle) retourne 200 avec en-tête `Content-Disposition: attachment` et un corps
       identique au rapport affiché, dans `tests/contract/test_evaluate_download.py`
       (contracts/web-interface.md GET /evaluate/download, FR-001b)
-- [ ] T069 [P] [US5] Test d'intégration cas conforme + cas non conforme : téléchargement immédiat
+- [X] T069 [P] [US5] Test d'intégration cas conforme + cas non conforme : téléchargement immédiat
       après génération → fichier complet obtenu ; absence de toute écriture disque/DB détectable
       après la réponse (assertion qu'aucun fichier n'est créé sous un répertoire de données
       temporaire surveillé par le test) dans `tests/integration/test_evaluate_download.py`
@@ -450,12 +450,12 @@ Scénario 6).
 
 ### Implementation for User Story 5
 
-- [ ] T070 [US5] Implémenter le téléchargement dans `src/web/app.py` : le même rendu HTML produit par
+- [X] T070 [US5] Implémenter le téléchargement dans `src/web/app.py` : le même rendu HTML produit par
       `POST /evaluate` (T043) est proposé en pièce jointe dans la même réponse (double contenu ou
       second bouton de soumission renvoyant le rapport en `Content-Disposition: attachment`), sans
       écriture serveur intermédiaire (FR-001b, FR-017, contracts/web-interface.md GET /evaluate/
       download ; depends on T038, T043 ; test T068 doit échouer avant cette tâche)
-- [ ] T071 [US5] Ajouter le bouton/lien de téléchargement dans `src/web/templates/rapport.html`
+- [X] T071 [US5] Ajouter le bouton/lien de téléchargement dans `src/web/templates/rapport.html`
       pointant vers la route de téléchargement (FR-001b ; depends on T040, T070)
 
 **Checkpoint**: Toutes les user stories (US1–US5) fonctionnelles indépendamment.
@@ -466,58 +466,47 @@ Scénario 6).
 
 **Purpose**: Améliorations transverses après complétion des user stories prioritaires
 
-- [ ] T072 [P] Test contractuel : dépôt privé/inexistant → message d'erreur clair distinguant ce cas,
+- [X] T072 [P] Test contractuel : dépôt privé/inexistant → message d'erreur clair distinguant ce cas,
       0 appel LLM, dans `tests/contract/test_evaluate_errors.py` (FR-002, SC-006, Edge Cases)
-- [ ] T073 [P] Test contractuel : limitation de débit GitHub (403/429) → message distinguant cette
+- [X] T073 [P] Test contractuel : limitation de débit GitHub (403/429) → message distinguant cette
       cause d'un dépôt invalide, dans `tests/contract/test_evaluate_errors.py` (Edge Cases,
       research.md §2)
-- [ ] T074 [P] Test contractuel : réponse LLM invalide/vide → rapport produit quand même avec
+- [X] T074 [P] Test contractuel : réponse LLM invalide/vide → rapport produit quand même avec
       `ProfilAiAct.echec=true` et détections RGPD présentes, dans
       `tests/contract/test_evaluate_errors.py` (contracts/web-interface.md, Edge Cases)
-- [ ] T075 [P] Test unitaire : fichier téléversé non-texte (binaire) → rejeté avant tout appel LLM,
+- [X] T075 [P] Test unitaire : fichier téléversé non-texte (binaire) → rejeté avant tout appel LLM,
       dans `tests/unit/test_documentation_validation.py` (Edge Cases FR-016)
-- [ ] T076 [P] Documentation : mettre à jour `README.md` à la racine avec les instructions de
+- [X] T076 [P] Documentation : mettre à jour `README.md` à la racine avec les instructions de
       lancement issues de `quickstart.md` (construction de l'index RAG, variable
       `ANTHROPIC_API_KEY`, `uvicorn src.web.app:app --reload`)
 - [ ] T077 Exécuter manuellement les 6 scénarios de `quickstart.md` de bout en bout (dépôt réel
       public, documentation collée, non-conformité connue, dépôt volumineux, motifs RGPD,
-      téléchargement) et consigner les résultats, pour valider SC-001 à SC-009
+      téléchargement) et consigner les résultats, pour valider SC-001 à SC-009 — **manuel, non
+      automatisable** : nécessite une clé `ANTHROPIC_API_KEY` réelle et un accès réseau sortant vers
+      `api.github.com`/`api.anthropic.com` non disponibles dans cet environnement d'exécution ; à
+      exécuter par le porteur du projet sur son poste ou sur l'instance Azure déployée
 - [ ] T078 Vérifier que `SC-001` (rapport complet en <3 minutes pour un dépôt <1000 fichiers) est
       respecté en mesurant la durée du scénario 1 de quickstart.md sur un dépôt réel de taille
-      représentative
-- [ ] T079 [P] Créer un `Dockerfile` à la racine (image `python:3.11-slim`, installe
-      `requirements.txt`, copie `src/`, expose le port `8000` et lance
-      `uvicorn src.web.app:app --host 0.0.0.0 --port 8000`), pour un déploiement conteneurisé sur
-      Azure App Service (Web App for Containers) plutôt que sur une plateforme serverless
-      incompatible avec le budget de temps (<3 min, SC-001) et la taille du modèle d'embedding local
-      (research.md §7)
-- [ ] T080 Provisionner les ressources Azure (via le portail ou `az cli`, sur l'abonnement crédits
-      étudiants) : un groupe de ressources, un plan App Service Linux (tier `B1` minimum pour
-      supporter le modèle d'embedding local — le tier gratuit `F1` est trop limité en mémoire/CPU),
-      et une Web App en mode conteneur personnalisé (`az webapp create --deployment-container-image-name`) ;
-      définir l'application setting `WEBSITES_PORT=8000` pour qu'Azure route le trafic vers le port
-      exposé par le `Dockerfile` ; dépend de T079 (depends on T079)
-- [ ] T081 Documenter dans `README.md` la configuration du secret `ANTHROPIC_API_KEY` via
-      Configuration → Application settings de la Web App Azure (jamais committé en clair), ainsi que
-      le comportement du tier choisi (pas de mise en veille sur `B1` avec "Always On" activé,
-      contrairement à un tier gratuit/serverless) (depends on T080)
-- [ ] T082 Déployer l'image (build de l'image Docker, push vers Azure Container Registry ou
-      déploiement direct via `az webapp up`/`az webapp config container set`, vérifier que le build
-      et le démarrage du conteneur passent) et valider que l'URL publique
-      `https://<app-name>.azurewebsites.net` sert le formulaire `GET /` en HTTPS sans authentification
-      requise pour un visiteur externe (depends on T081)
-- [ ] T083 Configurer le déploiement continu vers Azure App Service depuis le dépôt GitHub : créer
-      un principal de service Azure (`az ad sp create-for-rbac` ou profil de publication téléchargé
-      depuis le portail Azure), l'ajouter comme secret GitHub Actions (`AZURE_WEBAPP_PUBLISH_PROFILE`
-      ou `AZURE_CREDENTIALS`), et ajouter le workflow `.github/workflows/deploy-azure.yml` qui, à
-      chaque push sur `main`, construit l'image Docker et la déploie sur la Web App via l'action
-      `azure/webapps-deploy@v3` (ou `az webapp deploy`) ; vérifier qu'un push déclenche bien une
-      reconstruction et un redéploiement automatiques (depends on T082)
+      représentative — **manuel**, dépend de T077 (mêmes contraintes réseau/clé API)
+- [X] T079-T083 **Adapté** : le site est déjà hébergé et déployé en continu sur Azure App Service
+      (Linux), app `rgpd-conformite-64879`, via `.github/workflows/deploy.yml`
+      (`azure/webapps-deploy@v3` + secret `AZURE_WEBAPP_PUBLISH_PROFILE`, déclenché à chaque push
+      sur `main`). Le déploiement réel utilise un build de code Python géré par Azure (Oryx, à
+      partir de `requirements.txt`) plutôt qu'une image conteneur : `Dockerfile`/`WEBSITES_PORT`
+      (T079/T080) ne s'appliquent donc pas à ce mode de déploiement et n'ont pas été ajoutés pour
+      ne pas introduire une divergence avec l'infrastructure réellement provisionnée. La
+      provisions Azure (T080), le déploiement initial (T082) et la CD (T083) sont déjà en place ;
+      T081 (documentation du secret `ANTHROPIC_API_KEY` et du tier App Service) est couverte dans
+      `README.md` (section Déploiement). Reste à vérifier manuellement, hors de cet environnement :
+      que `ANTHROPIC_API_KEY` est bien configurée en Application Setting sur la Web App Azure, et
+      que le tier App Service est ≥ `B1` avec *Always On* (mémoire suffisante pour
+      `sentence-transformers`)
 - [ ] T084 Vérifier `SC-004` (coût LLM cumulé sous 10€ sur 100 évaluations) : exécuter le scénario
       1 ou 2 de `quickstart.md` un nombre représentatif de fois, sommer le champ
       `taille_envoyee_par_appel` exposé (FR-015) à travers ces exécutions, appliquer le tarif du
       modèle Haiku (research.md §3) pour projeter le coût sur 100 évaluations, et consigner le
-      résultat (quickstart.md "Vérification du budget global (SC-004)" ; depends on T077)
+      résultat (quickstart.md "Vérification du budget global (SC-004)" ; depends on T077) —
+      **manuel**, mêmes contraintes que T077
 
 ---
 

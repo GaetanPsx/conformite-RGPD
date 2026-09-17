@@ -76,14 +76,14 @@ def rendre_html(profil: ProfilProjetCombine) -> RapportFinal:
 
     Ne construit jamais de champ de score/niveau de risque agrege (FR-014).
     """
-    template = _env.get_template("rapport.html")
     citations = sorted(
         {
             *profil.profil_aiact.passages_utilises,
             *(nc.passage_source for nc in profil.non_conformites),
         }
     )
-    html = template.render(profil=profil, citations=citations)
+    corps_html = _env.get_template("rapport_corps.html").render(profil=profil, citations=citations)
+    html = _env.get_template("rapport.html").render(corps_html=corps_html)
     return RapportFinal(
         profil_combine=profil,
         citations=citations,
@@ -91,3 +91,11 @@ def rendre_html(profil: ProfilProjetCombine) -> RapportFinal:
         telechargeable=True,
         html=html,
     )
+
+
+def envelopper_telechargement(corps_html: str) -> str:
+    """Enveloppe le corps du rapport (deja rendu pour l'affichage) dans le gabarit de
+    telechargement, sans aucune ecriture serveur ni recalcul du pipeline (FR-001b, FR-017) :
+    le corps telecharge est ainsi identique au corps affiche dans la reponse `POST /evaluate`
+    qui l'a produit."""
+    return _env.get_template("rapport_telecharge.html").render(corps_html=corps_html)

@@ -7,85 +7,11 @@
 <body>
   <h1>Rapport de conformité AI Act / RGPD</h1>
 
-  {% if profil.avertissements %}
-  <section id="avertissements">
-    <h2>Avertissements</h2>
-    <ul>
-      {% for a in profil.avertissements %}
-      <li>{{ a }}</li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
-
-  <section id="profil-aiact">
-    <h2>Profil AI Act</h2>
-    {% if profil.profil_aiact.echec %}
-      <p>L'analyse AI Act a échoué pour cette évaluation (réponse du modèle invalide ou
-         inexploitable).</p>
-    {% else %}
-      <ul>
-        <li><strong>Secteur d'activité</strong>: {{ profil.profil_aiact.secteur_activite or "non déterminé" }}</li>
-        <li><strong>Finalité</strong>: {{ profil.profil_aiact.finalite or "non déterminée" }}</li>
-        <li><strong>Niveau d'autonomie décisionnelle</strong>: {{ profil.profil_aiact.niveau_autonomie_decisionnelle.value if profil.profil_aiact.niveau_autonomie_decisionnelle else "non déterminé" }}</li>
-      </ul>
-      <p>Fichiers/source ayant servi de contexte : {{ profil.profil_aiact.fichiers_source | join(", ") }}</p>
-      <p>Références légales citées : {{ profil.profil_aiact.passages_utilises | join(", ") or "aucune" }}</p>
-    {% endif %}
-  </section>
-
-  <section id="detections-rgpd">
-    <h2>Détections de données personnelles (RGPD)</h2>
-    {% if profil.detections_rgpd %}
-    <ul>
-      {% for d in profil.detections_rgpd %}
-      <li>
-        <strong>{{ d.categorie.value }}</strong>
-        — source : {{ d.source }} — extrait : <code>{{ d.extrait_masque }}</code>
-        (motif : {{ d.motif }})
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>Aucune catégorie de données personnelles détectée.</p>
-    {% endif %}
-  </section>
-
-  <section id="non-conformites">
-    <h2>Non-conformités potentielles</h2>
-    {% if profil.non_conformites %}
-    <ul>
-      {% for nc in profil.non_conformites %}
-      <li>{{ nc.description }} (référence : {{ nc.passage_source }})</li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>Aucune non-conformité potentielle identifiée pour cette évaluation.</p>
-    {% endif %}
-  </section>
-
-  <section id="citations">
-    <h2>Références légales citées</h2>
-    {% if citations %}
-    <ul>
-      {% for c in citations %}
-      <li>{{ c }}</li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>Aucune référence légale citée pour cette évaluation.</p>
-    {% endif %}
-  </section>
-
-  <section id="budget-llm">
-    <h2>Suivi du budget LLM</h2>
-    <p>Nombre d'appels LLM effectués : {{ profil.appels_llm_effectues }}</p>
-    <p>Taille envoyée par appel (caractères) : {{ profil.taille_envoyee_par_appel | join(", ") or "N/A" }}</p>
-  </section>
+  {{ corps_html | safe }}
 
   <section id="telechargement">
     <form method="post" action="/evaluate/download">
-      <input type="hidden" name="rapport_id" value="courant">
+      <input type="hidden" name="corps_html" value="{{ corps_html }}">
       <button type="submit">Télécharger le rapport</button>
     </form>
   </section>

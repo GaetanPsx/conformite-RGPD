@@ -4,7 +4,7 @@ import respx
 from fastapi.testclient import TestClient
 
 from src.web.app import app
-from tests.integration.conftest import add_anthropic_route, add_github_routes
+from tests.integration.conftest import add_llm_route, add_github_routes
 
 client = TestClient(app)
 
@@ -20,7 +20,7 @@ def test_evaluate_repo_mode_produit_profil_avec_citation():
                 {"path": "src/model_inference.py", "type": "blob", "size": 200},
             ],
         )
-        add_anthropic_route(
+        add_llm_route(
             mock,
             payload={
                 "secteur_activite": "sante",
@@ -51,7 +51,7 @@ def test_evaluate_repo_mode_detecte_categories_rgpd_avec_source():
                 {"path": "db/schema.sql", "type": "blob", "size": 10},
             ],
         )
-        add_anthropic_route(mock)
+        add_llm_route(mock)
         resp = client.post("/evaluate", data={"repo_url": "https://github.com/octocat/hello"})
 
     assert resp.status_code == 200
@@ -62,7 +62,7 @@ def test_evaluate_repo_mode_sans_fichier_pertinent_indique_absence():
     """Acceptance Scenario US1.3 : aucun fichier pertinent -> absence explicite."""
     with respx.mock(assert_all_called=False) as mock:
         add_github_routes(mock, tree=[])
-        add_anthropic_route(mock)
+        add_llm_route(mock)
         resp = client.post("/evaluate", data={"repo_url": "https://github.com/octocat/hello"})
 
     assert resp.status_code == 200

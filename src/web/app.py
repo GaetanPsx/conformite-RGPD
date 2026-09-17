@@ -5,10 +5,12 @@ Aucune persistance serveur (FR-017) : tout l'etat vit dans la duree de la requet
 
 from __future__ import annotations
 
+import time
+from collections import defaultdict, deque
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, Form, Request, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -33,6 +35,45 @@ app = FastAPI(title="Pipeline d'analyse de conformite AI Act / RGPD")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 MAX_DOC_CHARS = 40_000
+MAX_UPLOAD_BYTES = 2_000_000  # 2 Mo : evite l'epuisement memoire par upload volumineux
+MAX_BODY_BYTES = 3_000_000  # 3 Mo : plafond global du corps de requete (fichier + champs form)
+
+
+@app.middleware("http")
+async def _limiter_taille_corps(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length is not None:
+        try:
+            taille = int(content_length)
+        except ValueError:
+            taille = None
+        if taille is not None and taille > MAX_BODY_BYTES:
+            return _erreur(
+                request,
+                "La requête dépasse la taille maximale autorisée (3 Mo).",
+                status_code=413,
+            )
+    return await call_next(request)
+
+# Rate limiting basique par IP (evite l'abus de l'appel LLM payant / de l'API GitHub, FR non couvert
+# par le spec initial mais necessaire en exposition publique). Etat en memoire, suffisant pour une
+# instance unique ; a remplacer par un store partage en cas de scaling horizontal.
+RATE_LIMIT_MAX_REQUETES = 10
+RATE_LIMIT_FENETRE_SECONDES = 60.0
+_historique_requetes: dict[str, deque[float]] = defaultdict(deque)
+
+
+def _verifier_rate_limit(client_ip: str) -> None:
+    maintenant = time.monotonic()
+    historique = _historique_requetes[client_ip]
+    while historique and maintenant - historique[0] > RATE_LIMIT_FENETRE_SECONDES:
+        historique.popleft()
+    if len(historique) >= RATE_LIMIT_MAX_REQUETES:
+        raise HTTPException(
+            status_code=429,
+            detail="Trop de requêtes. Réessayez dans une minute.",
+        )
+    historique.append(maintenant)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -66,10 +107,19 @@ def post_evaluate(
     documentation_texte: str | None = Form(default=None),
     documentation_fichier: UploadFile | None = None,
 ):
+    client_ip = request.client.host if request.client else "inconnu"
+    _verifier_rate_limit(client_ip)
+
     fichier_bytes: bytes | None = None
     nom_fichier: str | None = None
     if documentation_fichier is not None and getattr(documentation_fichier, "filename", None):
-        fichier_bytes = documentation_fichier.file.read()
+        fichier_bytes = documentation_fichier.file.read(MAX_UPLOAD_BYTES + 1)
+        if len(fichier_bytes) > MAX_UPLOAD_BYTES:
+            return _erreur(
+                request,
+                "Le fichier téléversé dépasse la taille maximale autorisée (2 Mo).",
+                status_code=413,
+            )
         nom_fichier = documentation_fichier.filename
         if not fichier_bytes:
             fichier_bytes = None
@@ -163,8 +213,9 @@ def post_evaluate(
     requete_rag = " ".join(fc.contenu for fc in selection_aiact.fichiers)[:2000]
     passages = retriever.rechercher(requete_rag) if requete_rag.strip() else []
 
-    profil_aiact = aiact_analyzer.analyser(selection_aiact, passages)
+    profil_aiact, non_conformites_aiact = aiact_analyzer.analyser(selection_aiact, passages)
     detections_rgpd = rgpd_scanner.scanner(selection_rgpd)
+    non_conformites_rgpd = rgpd_scanner.associer_non_conformites(detections_rgpd)
 
     profil_combine = report_builder.combiner(
         mode_entree=mode_entree,
@@ -172,10 +223,24 @@ def post_evaluate(
         documentation=documentation,
         profil_aiact=profil_aiact,
         detections_rgpd=detections_rgpd,
-        non_conformites=[],
+        non_conformites=non_conformites_aiact + non_conformites_rgpd,
         appels_llm=llm_client.appels_llm_effectues,
         tailles_envoyees=llm_client.taille_envoyee_par_appel,
         arborescence_tronquee=arborescence_tronquee,
     )
     rapport = report_builder.rendre_html(profil_combine)
     return HTMLResponse(content=rapport.html, status_code=200)
+
+
+@app.post("/evaluate/download", response_class=HTMLResponse)
+def post_evaluate_download(corps_html: str = Form(...)):
+    """Telecharge le rapport de l'evaluation qui vient d'etre traitee (FR-001b, US5) : le corps
+    deja rendu par `POST /evaluate` est renvoye tel quel en piece jointe, sans aucune ecriture
+    serveur ni persistance (FR-017) ; aucun rapport passe n'est recuperable en dehors de ce
+    cycle requete/reponse."""
+    html = report_builder.envelopper_telechargement(corps_html)
+    return HTMLResponse(
+        content=html,
+        status_code=200,
+        headers={"Content-Disposition": 'attachment; filename="rapport-conformite.html"'},
+    )
