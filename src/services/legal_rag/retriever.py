@@ -14,6 +14,7 @@ import numpy as np
 from src.models.legal_corpus import PassageLegalRecupere
 
 INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "legal_corpus" / "index.npz"
+MODEL_CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "models"
 DEFAULT_TOP_N = 8
 
 _cache: dict[str, object] = {}
@@ -37,10 +38,14 @@ _model_cache: dict[str, object] = {}
 
 
 def _charger_modele(model_name: str):
+    # Si MODEL_CACHE_DIR a ete pre-rempli par le pipeline de deploiement (CI), on l'utilise pour
+    # eviter tout telechargement reseau au demarrage du conteneur en production. En local (dossier
+    # absent), on retombe sur le cache par defaut de sentence-transformers.
     if model_name not in _model_cache:
         from sentence_transformers import SentenceTransformer
 
-        _model_cache[model_name] = SentenceTransformer(model_name)
+        cache_folder = str(MODEL_CACHE_DIR) if MODEL_CACHE_DIR.exists() else None
+        _model_cache[model_name] = SentenceTransformer(model_name, cache_folder=cache_folder)
     return _model_cache[model_name]
 
 
