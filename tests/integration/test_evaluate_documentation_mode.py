@@ -1,7 +1,9 @@
-"""T029/T030/T031 [US1] : soumission en mode documentation (texte colle, fichier, entree absente)."""
+"""T029/T030/T031 [US1] : soumission en mode documentation (texte colle, fichier, lien, entree
+absente)."""
 
 import io
 
+import httpx
 import respx
 from fastapi.testclient import TestClient
 
@@ -45,6 +47,39 @@ def test_evaluate_documentation_fichier_televerse_utilise_comme_source_unique():
         )
 
     assert resp.status_code == 200
+
+
+def test_evaluate_documentation_lien_utilise_comme_source_unique():
+    """Le contenu d'un lien de documentation est recupere cote serveur puis analyse comme une
+    documentation collee."""
+    with respx.mock(assert_all_called=False) as mock:
+        add_llm_route(mock)
+        mock.get("https://exemple.com/doc-projet.txt").mock(
+            return_value=httpx.Response(
+                200,
+                content=(
+                    b"Systeme de notation de credit automatise utilisant l'IA, "
+                    b"secteur bancaire."
+                ),
+            )
+        )
+        resp = client.post(
+            "/evaluate",
+            data={"documentation_lien": "https://exemple.com/doc-projet.txt"},
+        )
+
+    assert resp.status_code == 200
+
+
+def test_evaluate_documentation_lien_inaccessible_est_rejete():
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get("https://exemple.com/absent.txt").mock(return_value=httpx.Response(404))
+        resp = client.post(
+            "/evaluate",
+            data={"documentation_lien": "https://exemple.com/absent.txt"},
+        )
+
+    assert resp.status_code == 422
 
 
 def test_evaluate_sans_entree_exploitable_est_rejete():

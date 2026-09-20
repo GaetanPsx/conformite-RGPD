@@ -2,26 +2,113 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Pipeline d'analyse de conformité (AI Act / RGPD)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyse de conformité AI Act / RGPD</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <h1>Analyse de conformité AI Act / RGPD</h1>
-  <p>Soumettez soit l'URL d'un dépôt GitHub public, soit une documentation de projet (texte collé
-     ou fichier téléversé). Une seule évaluation à la fois.</p>
-  <form method="post" action="/evaluate" enctype="multipart/form-data">
-    <fieldset>
-      <legend>Mode dépôt</legend>
-      <label for="repo_url">URL du dépôt GitHub public</label>
-      <input type="text" id="repo_url" name="repo_url" placeholder="https://github.com/owner/repo">
-    </fieldset>
-    <fieldset>
-      <legend>Mode documentation</legend>
-      <label for="documentation_texte">Documentation collée</label>
-      <textarea id="documentation_texte" name="documentation_texte" rows="8" cols="60"></textarea>
-      <label for="documentation_fichier">Ou fichier de documentation</label>
-      <input type="file" id="documentation_fichier" name="documentation_fichier">
-    </fieldset>
-    <button type="submit">Lancer l'évaluation</button>
-  </form>
+  <div class="top-bar">
+    <div class="top-bar__inner">
+      <div class="top-bar__mark" aria-hidden="true"></div>
+      <div class="top-bar__title">Conformité <span>AI Act / RGPD</span></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="hero">
+      <h1>Évaluez la conformité d'un projet</h1>
+      <p>
+        Soumettez un dépôt GitHub public ou une documentation de projet : le rapport identifie les
+        données personnelles détectées et les non-conformités potentielles au regard de l'AI Act et
+        du RGPD. Aucune donnée n'est conservée après l'analyse.
+      </p>
+    </div>
+
+    <form id="evaluation-form" method="post" action="/evaluate" enctype="multipart/form-data" novalidate>
+
+      <section class="card">
+        <div class="card__header">
+          <span class="card__index">1</span>
+          <h2 class="card__title">Dépôt GitHub</h2>
+        </div>
+        <p class="card__hint">L'URL d'un dépôt public, analysé automatiquement.</p>
+        <div class="field">
+          <label for="repo_url">URL du dépôt</label>
+          <input
+            class="text-input"
+            type="url"
+            id="repo_url"
+            name="repo_url"
+            placeholder="https://github.com/owner/repo"
+            autocomplete="off"
+          >
+          <p class="field-help">Seuls les dépôts publics, accessibles sans authentification, sont pris en charge.</p>
+        </div>
+      </section>
+
+      <div class="divider-or">ou</div>
+
+      <section class="card">
+        <div class="card__header">
+          <span class="card__index">2</span>
+          <h2 class="card__title">Documentation du projet</h2>
+        </div>
+        <p class="card__hint">Pas de dépôt GitHub ? Fournissez la documentation directement.</p>
+
+        <div class="tabs" role="tablist">
+          <button type="button" class="tabs__btn" role="tab" aria-selected="true" data-tab-target="fichier">Fichier</button>
+          <button type="button" class="tabs__btn" role="tab" aria-selected="false" data-tab-target="lien">Lien</button>
+          <button type="button" class="tabs__btn" role="tab" aria-selected="false" data-tab-target="texte">Texte collé</button>
+        </div>
+
+        <div class="tab-panel" data-tab-panel="fichier">
+          <label for="documentation_fichier">Fichier de documentation</label>
+          <div class="dropzone" tabindex="0" role="button" aria-label="Glissez-déposez un fichier ou cliquez pour le sélectionner">
+            <p class="dropzone__title">Glissez-déposez un fichier ici</p>
+            <p class="dropzone__hint">ou cliquez pour parcourir vos fichiers — 2 Mo maximum</p>
+            <p class="dropzone__filename"></p>
+            <input class="dropzone__file" type="file" id="documentation_fichier" name="documentation_fichier">
+          </div>
+        </div>
+
+        <div class="tab-panel" data-tab-panel="lien" hidden>
+          <label for="documentation_lien">Lien vers la documentation</label>
+          <input
+            class="text-input"
+            type="url"
+            id="documentation_lien"
+            name="documentation_lien"
+            placeholder="https://exemple.com/documentation-projet"
+            autocomplete="off"
+          >
+          <p class="field-help">Le contenu de la page est récupéré automatiquement au moment de l'analyse.</p>
+        </div>
+
+        <div class="tab-panel" data-tab-panel="texte" hidden>
+          <label for="documentation_texte">Documentation collée</label>
+          <textarea
+            id="documentation_texte"
+            name="documentation_texte"
+            placeholder="Collez ici la documentation du projet (README, spécifications, notice d'usage...)"
+          ></textarea>
+        </div>
+      </section>
+
+      <div class="submit-row">
+        <button type="submit" id="submit-btn" class="btn btn-primary">Lancer l'évaluation</button>
+        <span class="form-note">Une seule évaluation à la fois.</span>
+      </div>
+    </form>
+
+    <p class="footer-note">Aucune persistance serveur : le rapport n'existe que le temps de la requête.</p>
+  </div>
+
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <p class="loading-overlay__text">Analyse en cours</p>
+    <p class="loading-overlay__hint">Lecture du dépôt ou de la documentation, recherche légale et génération du rapport. Cela peut prendre jusqu'à une minute.</p>
+  </div>
+
+  <script src="/static/app.js"></script>
 </body>
 </html>

@@ -25,6 +25,14 @@ def test_documentation_fichier_seul_donne_mode_documentation():
     assert resultat.mode == Mode.DOCUMENTATION
 
 
+def test_documentation_lien_seul_donne_mode_documentation():
+    resultat = determiner_mode(
+        repo_url=None, documentation_lien="https://exemple.com/doc.txt"
+    )
+    assert resultat.mode == Mode.DOCUMENTATION
+    assert resultat.source_ignoree is False
+
+
 def test_url_et_documentation_fournies_ensemble_privilegie_mode_depot():
     resultat = determiner_mode(
         repo_url="https://github.com/octocat/hello-world",
