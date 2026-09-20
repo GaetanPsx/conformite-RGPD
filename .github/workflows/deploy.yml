@@ -20,6 +20,11 @@ jobs:
         with:
           python-version: "3.11"
       - name: Pre-cache embedding model (evite tout telechargement au demarrage du conteneur)
+        env:
+          # Le cache HF par defaut utilise des symlinks (snapshots/ -> blobs/) qui cassent une
+          # fois zippes par le deploiement Azure (config.json devient un lien mort => vide).
+          # On force des copies reelles pour que le cache survive au zip/unzip.
+          HF_HUB_DISABLE_SYMLINKS: "1"
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
