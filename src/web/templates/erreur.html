@@ -2,11 +2,24 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Erreur - Analyse de conformité</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <h1>Impossible de lancer l'évaluation</h1>
-  <p role="alert">{{ message }}</p>
-  <p><a href="/">Retour au formulaire</a></p>
+  <div class="top-bar">
+    <div class="top-bar__inner">
+      <div class="top-bar__mark" aria-hidden="true"></div>
+      <div class="top-bar__title">Conformité <span>AI Act / RGPD</span></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="alert-card" role="alert">
+      <h1>Impossible de lancer l'évaluation</h1>
+      <p>{{ message }}</p>
+    </div>
+    <a class="link-back" href="/">Retour au formulaire</a>
+  </div>
 </body>
 </html>

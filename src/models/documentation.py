@@ -10,6 +10,7 @@ from pydantic import BaseModel, field_validator
 class SourceDocumentation(str, Enum):
     TEXTE_COLLE = "texte_colle"
     FICHIER_TELEVERSE = "fichier_televerse"
+    LIEN_URL = "lien_url"
 
 
 class DocumentationFournie(BaseModel):

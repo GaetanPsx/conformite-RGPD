@@ -13,6 +13,7 @@ from pathlib import Path
 import httpx
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from src.models.documentation import DocumentationFournie, SourceDocumentation
@@ -20,6 +21,7 @@ from src.models.fichier import FichierAvecContenu, FichierDepot
 from src.models.selection import SelectionAiAct, SelectionRgpd
 from src.services import (
     aiact_analyzer,
+    doc_link_fetcher,
     file_selector,
     github_client,
     input_router,
@@ -31,6 +33,7 @@ from src.services import (
 from src.services.legal_rag import retriever
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
@@ -46,6 +49,7 @@ async def _lifespan(app: FastAPI):
 
 app = FastAPI(title="Pipeline d'analyse de conformite AI Act / RGPD", lifespan=_lifespan)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 MAX_DOC_CHARS = 40_000
 MAX_UPLOAD_BYTES = 2_000_000  # 2 Mo : evite l'epuisement memoire par upload volumineux
@@ -118,6 +122,7 @@ def post_evaluate(
     request: Request,
     repo_url: str | None = Form(default=None),
     documentation_texte: str | None = Form(default=None),
+    documentation_lien: str | None = Form(default=None),
     documentation_fichier: UploadFile | None = None,
 ):
     client_ip = request.client.host if request.client else "inconnu"
@@ -142,6 +147,7 @@ def post_evaluate(
             repo_url=repo_url,
             documentation_texte=documentation_texte,
             documentation_fichier=fichier_bytes,
+            documentation_lien=documentation_lien,
         )
     except input_router.AucuneEntreeExploitableError as exc:
         return _erreur(request, str(exc), status_code=422)
@@ -194,21 +200,34 @@ def post_evaluate(
                 fichiers, lecteur_contenu=lecteur_contenu
             )
     else:
-        source = (
-            SourceDocumentation.FICHIER_TELEVERSE
-            if fichier_bytes
-            else SourceDocumentation.TEXTE_COLLE
-        )
-        contenu_brut = fichier_bytes if fichier_bytes else (documentation_texte or "")
+        lien_documentation = (documentation_lien or "").strip()
+        if fichier_bytes:
+            source = SourceDocumentation.FICHIER_TELEVERSE
+            contenu_brut: bytes | str = fichier_bytes
+        elif documentation_texte and documentation_texte.strip():
+            source = SourceDocumentation.TEXTE_COLLE
+            contenu_brut = documentation_texte
+        else:
+            try:
+                contenu_brut = doc_link_fetcher.recuperer_contenu(lien_documentation)
+            except doc_link_fetcher.LienDocumentationInvalideError as exc:
+                return _erreur(request, str(exc), status_code=422)
+            except doc_link_fetcher.LienDocumentationInaccessibleError as exc:
+                return _erreur(request, str(exc), status_code=422)
+            source = SourceDocumentation.LIEN_URL
+            nom_fichier = lien_documentation
+
         if isinstance(contenu_brut, bytes):
             try:
                 contenu_texte = contenu_brut.decode("utf-8")
             except UnicodeDecodeError:
-                return _erreur(
-                    request,
-                    "Le fichier téléversé n'est pas un format texte exploitable (binaire).",
-                    status_code=422,
+                message_erreur = (
+                    "Le contenu récupéré depuis le lien n'est pas un format texte exploitable "
+                    "(binaire)."
+                    if source == SourceDocumentation.LIEN_URL
+                    else "Le fichier téléversé n'est pas un format texte exploitable (binaire)."
                 )
+                return _erreur(request, message_erreur, status_code=422)
         else:
             contenu_texte = contenu_brut
 

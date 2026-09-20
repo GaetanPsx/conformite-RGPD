@@ -13,18 +13,21 @@ def determiner_mode(
     repo_url: str | None,
     documentation_texte: str | None = None,
     documentation_fichier: bytes | None = None,
+    documentation_lien: str | None = None,
 ) -> ModeEntree:
     """Regle deterministe (research.md §8) :
 
     - URL GitHub valide dans `repo_url` -> mode depot (documentation fournie en parallele,
       si non vide, est ignoree et signalee via `source_ignoree=true`).
-    - Sinon, `documentation_texte` non vide ou `documentation_fichier` non vide -> mode
-      documentation.
+    - Sinon, `documentation_texte` non vide, `documentation_fichier` non vide, ou
+      `documentation_lien` non vide -> mode documentation.
     - Sinon -> AucuneEntreeExploitableError.
     """
     url_valide = bool(repo_url) and parse_github_url(repo_url) is not None
-    documentation_fournie = bool(documentation_texte and documentation_texte.strip()) or bool(
-        documentation_fichier
+    documentation_fournie = (
+        bool(documentation_texte and documentation_texte.strip())
+        or bool(documentation_fichier)
+        or bool(documentation_lien and documentation_lien.strip())
     )
 
     if url_valide:
@@ -34,5 +37,6 @@ def determiner_mode(
         return ModeEntree(mode=Mode.DOCUMENTATION, source_ignoree=False)
 
     raise AucuneEntreeExploitableError(
-        "Une URL de depot GitHub valide ou une documentation (texte/fichier) est requise (FR-001)"
+        "Une URL de depot GitHub valide ou une documentation (texte, fichier ou lien) est "
+        "requise (FR-001)"
     )

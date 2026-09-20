@@ -2,18 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rapport de conformité</title>
+  {% include "_rapport_style.html" %}
 </head>
 <body>
-  <h1>Rapport de conformité AI Act / RGPD</h1>
+  <div class="report-page">
+    <header class="report-header">
+      <p class="report-header__eyebrow">Rapport de conformité</p>
+      <h1>AI Act / RGPD</h1>
+    </header>
 
-  {{ corps_html | safe }}
+    {{ corps_html | safe }}
 
-  <section id="telechargement">
-    <form method="post" action="/evaluate/download">
-      <input type="hidden" name="corps_html" value="{{ corps_html }}">
-      <button type="submit">Télécharger le rapport</button>
-    </form>
-  </section>
+    <section class="report-section download-row" id="telechargement">
+      <form method="post" action="/evaluate/download">
+        <input type="hidden" name="corps_html" value="{{ corps_html }}">
+        <button type="submit" class="btn">Télécharger le rapport</button>
+      </form>
+    </section>
+  </div>
 </body>
 </html>

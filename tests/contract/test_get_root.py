@@ -12,3 +12,4 @@ def test_get_root_retourne_formulaire():
     assert 'name="repo_url"' in resp.text
     assert 'name="documentation_texte"' in resp.text
     assert 'name="documentation_fichier"' in resp.text
+    assert 'name="documentation_lien"' in resp.text
