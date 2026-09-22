@@ -6,3 +6,4 @@ src/data/models/
 .ruff_cache/
 .env
 *.egg-info/
+preview/

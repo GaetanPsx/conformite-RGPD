@@ -50,7 +50,6 @@ def test_telechargement_immediat_apres_generation_donne_le_fichier_complet(tmp_p
         "Détections de données personnelles",
         "Non-conformités potentielles",
         "Références légales citées",
-        "Suivi du budget LLM",
     ):
         assert section in resp_download.text
 
