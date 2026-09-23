@@ -31,8 +31,9 @@ class _FauxClient:
     def __init__(self, texte: str):
         self._texte = texte
         self.chat = self
+        self.completions = self
 
-    def complete(self, **kwargs):
+    def create(self, **kwargs):
         return _FausseReponse(self._texte)
 
 
