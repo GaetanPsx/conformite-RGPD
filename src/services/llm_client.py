@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 MODEL_NAME = "gpt-4.1-nano-2025-04-14"
 MAX_PROMPT_CHARS = 40_000
 MAX_TOKENS_SORTIE = 2048
+# gpt-4.1-nano repond en quelques secondes : au-dela, mieux vaut echouer proprement que bloquer
+# l'evaluation (objectif : analyse complete en moins de 20 s).
+TIMEOUT_S = 12.0
 
 # Compteurs de budget exposes pour le suivi (FR-015), reinitialisables par evaluation via reset().
 appels_llm_effectues = 0
@@ -74,7 +77,7 @@ def appeler_llm(prompt: str, client=None) -> dict | None:
         if client is None:
             import openai
 
-            client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""), max_retries=2)
+            client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""), max_retries=1, timeout=TIMEOUT_S)
 
         response = client.chat.completions.create(
             model=MODEL_NAME,

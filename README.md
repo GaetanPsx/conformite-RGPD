@@ -20,15 +20,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Construire l'index RAG (une seule fois)
+## Recherche légale (RAG)
 
-Le corpus juridique (`src/data/legal_corpus/corpus.json`) doit être encodé une fois hors ligne ;
-l'index versionné `src/data/legal_corpus/index.npz` est déjà committé, mais peut être régénéré
-après modification du corpus :
-
-```bash
-python -m src.services.legal_rag.build_index
-```
+Le corpus juridique (`src/data/legal_corpus/corpus.json`, une dizaine de passages) est indexé en
+mémoire au démarrage (TF-IDF, numpy) : aucune étape de build ni modèle d'embedding à embarquer.
+Pour enrichir le corpus, il suffit d'éditer `corpus.json`.
 
 ## Lancer le service localement
 
@@ -66,9 +62,19 @@ Configuration requise côté Azure (Web App → *Configuration → Application s
 - `OPENAI_API_KEY` : la clé API OpenAI, jamais committée en clair dans le dépôt.
 - `SCM_DO_BUILD_DURING_DEPLOYMENT=true` (généralement activé par défaut pour un déploiement Python
   via `webapps-deploy`) afin qu'Azure installe `requirements.txt` pendant le déploiement.
-- Un tier App Service Linux `B1` minimum (le tier gratuit `F1` est trop limité en mémoire/CPU pour
-  le modèle d'embedding local `sentence-transformers`), avec *Always On* activé pour éviter la mise
-  en veille.
+- Un tier App Service Linux `B1` recommandé, avec *Always On* activé pour éviter la mise en veille
+  (et donc un démarrage à froid).
 
 La CI (`.github/workflows/tests.yml`) exécute la suite `pytest` sur chaque push/PR avant tout
 déploiement.
+
+## Déploiement (Vercel)
+
+Le dépôt est aussi déployable sur Vercel : [app.py](app.py) (à la racine) expose l'application
+FastAPI, [vercel.json](vercel.json) règle la durée maximale de la fonction (30 s) et
+`.vercelignore` exclut tests, specs et outils de dev du bundle. Seul `requirements.txt` (dépendances
+d'exécution) est installé ; les dépendances de test sont dans `requirements-dev.txt`.
+
+Variable d'environnement à définir dans Vercel (*Settings → Environment Variables*) :
+`OPENAI_API_KEY`. Le rate limiting par IP est en mémoire : il ne s'applique donc que par instance
+serverless.

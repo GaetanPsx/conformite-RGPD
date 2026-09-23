@@ -26,7 +26,7 @@ def verifier_accessibilite(owner: str, repo: str, client: httpx.Client | None = 
     si l'API GitHub limite le debit (403/429), afin de distinguer clairement les deux causes.
     """
     close_client = client is None
-    client = client or httpx.Client(timeout=10.0)
+    client = client or httpx.Client(timeout=10.0, follow_redirects=True)
     try:
         resp = client.get(f"{GITHUB_API_BASE}/repos/{owner}/{repo}")
         if resp.status_code == 404:
@@ -58,7 +58,7 @@ def obtenir_contenu_fichier(
     """Recupere le contenu brut d'un fichier via raw.githubusercontent.com (pas d'authentification
     requise). Retourne None si le fichier est introuvable ou inaccessible, plutot que de lever."""
     close_client = client is None
-    client = client or httpx.Client(timeout=15.0)
+    client = client or httpx.Client(timeout=15.0, follow_redirects=True)
     try:
         branch = depot.default_branch or "main"
         resp = client.get(f"{GITHUB_RAW_BASE}/{depot.owner}/{depot.repo}/{branch}/{chemin}")
@@ -81,7 +81,7 @@ def lister_fichiers(
     l'arborescence depasse la limite de l'endpoint (FR-003a).
     """
     close_client = client is None
-    client = client or httpx.Client(timeout=15.0)
+    client = client or httpx.Client(timeout=15.0, follow_redirects=True)
     try:
         branch = depot.default_branch or "main"
         resp = client.get(

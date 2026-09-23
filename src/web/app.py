@@ -37,11 +37,10 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
-    # Precharge le modele d'embedding local au demarrage plutot qu'a la premiere requete
-    # /evaluate, pour eviter de faire payer le cold start (chargement des poids) a l'utilisateur.
+    # Indexe le corpus juridique (12 passages, quelques ms) au demarrage plutot qu'a la premiere
+    # requete /evaluate.
     try:
-        index = retriever._charger_index()
-        retriever._charger_modele(index["model_name"])
+        retriever._charger_index()
     except FileNotFoundError:
         pass
     yield
@@ -161,7 +160,7 @@ def post_evaluate(
         from src.models.depot import parse_github_url
 
         owner, repo = parse_github_url(repo_url)
-        with httpx.Client(timeout=15.0) as http_client:
+        with httpx.Client(timeout=15.0, follow_redirects=True) as http_client:
             try:
                 depot = github_client.verifier_accessibilite(owner, repo, client=http_client)
             except github_client.DepotInaccessibleError:
@@ -190,8 +189,16 @@ def post_evaluate(
 
             arborescence_tronquee = truncated
 
+            cache_contenus: dict[str, bytes | None] = {}
+
             def lecteur_contenu(chemin: str, _depot=depot, _client=http_client) -> bytes | None:
-                return github_client.obtenir_contenu_fichier(_depot, chemin, client=_client)
+                # Cache : un fichier retenu a la fois pour l'analyse AI Act et le scan RGPD
+                # n'est telecharge qu'une fois.
+                if chemin not in cache_contenus:
+                    cache_contenus[chemin] = github_client.obtenir_contenu_fichier(
+                        _depot, chemin, client=_client
+                    )
+                return cache_contenus[chemin]
 
             selection_aiact = file_selector.selectionner_fichiers_aiact(
                 fichiers, lecteur_contenu=lecteur_contenu
