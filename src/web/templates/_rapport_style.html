@@ -7,8 +7,11 @@
     --text: #191b28;
     --text-muted: #5b5f74;
     --text-faint: #8f93a8;
-    --accent: #4338ca;
-    --accent-soft: #eeecfd;
+    --accent: #15803d;
+    --accent-hover: #116932;
+    --accent-soft: #dcfce7;
+    --legal-accent: #4338ca;
+    --legal-accent-soft: #eeecfd;
     --danger: #b3261e;
     --danger-soft: #fbe9e7;
     --warning: #92400e;
@@ -70,6 +73,42 @@
     font-size: 1.02rem;
     margin: 0 0 16px;
     letter-spacing: -0.01em;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .section-header h2 {
+    margin: 0;
+  }
+
+  .btn-toggle {
+    appearance: none;
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong, #c7cadb);
+    background: var(--surface);
+    color: var(--accent);
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 650;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+
+  .btn-toggle:hover {
+    background: var(--accent-soft);
+  }
+
+  .item-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .report-section > p.empty-state,
@@ -213,8 +252,8 @@
   }
 
   .tag {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--legal-accent-soft);
+    color: var(--legal-accent);
     font-size: 0.78rem;
     font-weight: 600;
     padding: 4px 10px;
@@ -262,6 +301,6 @@
   }
 
   .btn:hover {
-    background: #362f9e;
+    background: var(--accent-hover);
   }
 </style>

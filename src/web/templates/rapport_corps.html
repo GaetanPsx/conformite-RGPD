@@ -29,20 +29,44 @@
 </section>
 
 <section class="report-section" id="detections-rgpd">
-  <h2>Détections de données personnelles (RGPD)</h2>
+  <div class="section-header">
+    <h2>Détections de données personnelles (RGPD)</h2>
+    {% if profil.detections_rgpd %}
+    <button type="button" class="btn-toggle" id="toggle-detections-rgpd" data-expanded="false">Voir plus</button>
+    {% endif %}
+  </div>
   {% if profil.detections_rgpd %}
-  <ul class="item-list">
-    {% for d in profil.detections_rgpd %}
-    <li class="item-row item-row--rgpd">
-      <div class="item-row__top">
-        <span class="badge badge--rgpd">{{ d.categorie.value }}</span>
-        <span class="item-row__source">{{ d.source }}</span>
-      </div>
-      <p>Extrait : <code>{{ d.extrait_masque }}</code></p>
-      <p class="meta-line">Motif : {{ d.motif }}</p>
-    </li>
+  <div class="item-groups">
+    {% for categorie, items in profil.detections_rgpd | groupby("categorie.value") %}
+    <ul class="item-list">
+      {% for d in items %}
+      <li class="item-row item-row--rgpd{% if not loop.first %} item-row--extra{% endif %}"{% if not loop.first %} hidden{% endif %}>
+        <div class="item-row__top">
+          <span class="badge badge--rgpd">{{ d.categorie.value }}</span>
+          <span class="item-row__source">{{ d.source }}</span>
+        </div>
+        <p>Extrait : <code>{{ d.extrait_masque }}</code></p>
+        <p class="meta-line">Motif : {{ d.motif }}</p>
+      </li>
+      {% endfor %}
+    </ul>
     {% endfor %}
-  </ul>
+  </div>
+  <script>
+    (function () {
+      var btn = document.getElementById("toggle-detections-rgpd");
+      if (!btn) return;
+      var extras = document.querySelectorAll("#detections-rgpd .item-row--extra");
+      btn.addEventListener("click", function () {
+        var expanded = btn.getAttribute("data-expanded") === "true";
+        extras.forEach(function (el) {
+          el.hidden = expanded;
+        });
+        btn.setAttribute("data-expanded", String(!expanded));
+        btn.textContent = expanded ? "Voir plus" : "Réduire";
+      });
+    })();
+  </script>
   {% else %}
   <p class="empty-state">Aucune catégorie de données personnelles détectée.</p>
   {% endif %}
@@ -78,10 +102,4 @@
   {% else %}
   <p class="empty-state">Aucune référence légale citée pour cette évaluation.</p>
   {% endif %}
-</section>
-
-<section class="report-section" id="budget-llm">
-  <h2>Suivi du budget LLM</h2>
-  <p class="meta-line">Nombre d'appels LLM effectués : {{ profil.appels_llm_effectues }}</p>
-  <p class="meta-line">Taille envoyée par appel (caractères): {{ profil.taille_envoyee_par_appel | join(", ") or "N/A" }}</p>
 </section>

@@ -8,6 +8,7 @@ import re
 import respx
 from fastapi.testclient import TestClient
 
+from src.services import llm_client
 from src.web.app import app
 from tests.integration.conftest import add_llm_route, add_github_routes
 
@@ -40,16 +41,8 @@ def test_depot_volumineux_borne_les_selections_et_le_budget_llm():
 
     # Au maximum 2 appels LLM comptabilises pour l'evaluation entiere (FR-009, SC-002) : la
     # recherche RAG (0 appel LLM payant, FR-018/019) n'est jamais comptee.
-    match = re.search(r"Nombre d'appels LLM effectu\xe9s\s*:\s*(\d+)", texte)
-    assert match is not None
-    nombre_appels = int(match.group(1))
-    assert 1 <= nombre_appels <= 2
+    assert 1 <= llm_client.appels_llm_effectues <= 2
 
     # Aucun appel n'a depasse le plafond de 40 000 caracteres.
-    match_tailles = re.search(r"Taille envoy\xe9e par appel[^:]*:\s*([^<\n]*)", texte)
-    assert match_tailles is not None
-    tailles_brutes = match_tailles.group(1).strip()
-    if tailles_brutes and tailles_brutes.lower() != "n/a":
-        tailles = [int(t.strip()) for t in tailles_brutes.split(",") if t.strip()]
-        assert tailles
-        assert all(taille <= MAX_PROMPT_CHARS for taille in tailles)
+    assert llm_client.taille_envoyee_par_appel
+    assert all(taille <= MAX_PROMPT_CHARS for taille in llm_client.taille_envoyee_par_appel)

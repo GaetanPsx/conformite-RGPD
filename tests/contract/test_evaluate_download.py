@@ -45,4 +45,3 @@ def test_telechargement_retourne_attachment_avec_corps_identique():
 
     # Le corps du rapport telecharge contient les memes sections/valeurs que celles affichees.
     assert "Profil AI Act" in resp_download.text
-    assert "Suivi du budget LLM" in resp_download.text

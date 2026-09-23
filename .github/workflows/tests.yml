@@ -8,7 +8,7 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     env:
-      OPENAI_API_KEY: "test-key-not-real"
+      MISTRAL_API_KEY: "test-key-not-real"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

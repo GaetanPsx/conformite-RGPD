@@ -1,8 +1,8 @@
-"""Client LLM encapsulant l'unique appel a l'API OpenAI (FR-007, FR-008, FR-009, FR-016).
+"""Client LLM encapsulant l'unique appel a l'API Mistral AI (FR-007, FR-008, FR-009, FR-016).
 
-Modele gpt-4o-mini, temperature 0 pour la reproductibilite (research.md §3). `appeler_llm` ne leve
-jamais d'exception non geree : en cas d'echec (reponse vide/malformee/non-JSON, erreur reseau),
-elle retourne None plutot que de faire planter le pipeline (Edge Cases).
+Modele mistral-small-latest, temperature 0 pour la reproductibilite (research.md §3). `appeler_llm`
+ne leve jamais d'exception non geree : en cas d'echec (reponse vide/malformee/non-JSON, erreur
+reseau), elle retourne None plutot que de faire planter le pipeline (Edge Cases).
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import os
 
-MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "mistral-small-latest"
 MAX_PROMPT_CHARS = 40_000
 
 # Compteurs de budget exposes pour le suivi (FR-015), reinitialisables par evaluation via reset().
@@ -41,7 +41,7 @@ def _extraire_json(texte: str) -> dict | None:
 
 
 def appeler_llm(prompt: str, client=None) -> dict | None:
-    """Appelle le LLM (OpenAI, gpt-4o-mini, temperature 0) et parse la reponse JSON.
+    """Appelle le LLM (Mistral AI, mistral-small-latest, temperature 0) et parse la reponse JSON.
 
     Retourne None si l'appel echoue ou si la reponse n'est pas un JSON exploitable.
     Incremente les compteurs de budget (appels_llm_effectues, taille_envoyee_par_appel)
@@ -57,11 +57,11 @@ def appeler_llm(prompt: str, client=None) -> dict | None:
 
     try:
         if client is None:
-            import openai
+            from mistralai import Mistral
 
-            client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
+            client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY", ""))
 
-        response = client.chat.completions.create(
+        response = client.chat.complete(
             model=MODEL_NAME,
             max_tokens=2048,
             temperature=0,
