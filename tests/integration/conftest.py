@@ -1,4 +1,4 @@
-"""Helpers partages pour les tests d'integration : mocks GitHub et Mistral AI via respx.
+"""Helpers partages pour les tests d'integration : mocks GitHub et OpenAI via respx.
 
 Un seul routeur respx par test (pour eviter les conflits d'interception imbriques) : les tests
 ouvrent `with respx.mock() as mock:` puis appellent `add_github_routes(mock, ...)` et/ou
@@ -17,7 +17,7 @@ from httpx import Response
 
 GITHUB_API_BASE = "https://api.github.com"
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com"
-MISTRAL_CHAT_URL = "https://api.mistral.ai/v1/chat/completions"
+OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
 DEFAULT_CONTENTS = {
     "README.md": "# Projet\nSysteme d'aide au diagnostic medical par IA dans le secteur de la sante.",
@@ -37,12 +37,11 @@ DEFAULT_LLM_PAYLOAD = {
 }
 
 
-def mistral_response_body(payload: dict) -> dict:
+def openai_response_body(payload: dict) -> dict:
     return {
         "id": "chatcmpl-test",
         "object": "chat.completion",
-        "created": 1_700_000_000,
-        "model": "mistral-small-latest",
+        "model": "gpt-4.1-nano",
         "choices": [
             {
                 "index": 0,
@@ -94,8 +93,8 @@ def add_github_routes(
 def add_llm_route(mock, payload: dict | None = None, status: int = 200):
     payload = payload if payload is not None else DEFAULT_LLM_PAYLOAD
     if status != 200:
-        mock.post(MISTRAL_CHAT_URL).mock(return_value=Response(status, json={}))
+        mock.post(OPENAI_CHAT_URL).mock(return_value=Response(status, json={}))
         return
-    mock.post(MISTRAL_CHAT_URL).mock(
-        return_value=Response(200, json=mistral_response_body(payload))
+    mock.post(OPENAI_CHAT_URL).mock(
+        return_value=Response(200, json=openai_response_body(payload))
     )

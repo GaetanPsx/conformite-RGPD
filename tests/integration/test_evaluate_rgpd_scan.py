@@ -7,7 +7,7 @@ import respx
 from fastapi.testclient import TestClient
 
 from src.web.app import app
-from tests.integration.conftest import MISTRAL_CHAT_URL, add_llm_route, add_github_routes
+from tests.integration.conftest import OPENAI_CHAT_URL, add_llm_route, add_github_routes
 
 client = TestClient(app)
 
@@ -34,7 +34,7 @@ def test_motifs_connus_produisent_des_detections_masquees_avec_source():
         resp = client.post("/evaluate", data={"repo_url": "https://github.com/octocat/hello"})
 
         # Un seul appel LLM (AI Act) : le scan RGPD par motifs n'en declenche aucun (FR-010).
-        appels_llm = [c for c in mock.calls if str(c.request.url) == MISTRAL_CHAT_URL]
+        appels_llm = [c for c in mock.calls if str(c.request.url) == OPENAI_CHAT_URL]
         assert len(appels_llm) == 1
 
     assert resp.status_code == 200

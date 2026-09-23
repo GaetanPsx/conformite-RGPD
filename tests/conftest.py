@@ -16,7 +16,7 @@ from src.web import app as app_module
 
 @pytest.fixture(autouse=True)
 def _env_and_counters():
-    os.environ.setdefault("MISTRAL_API_KEY", "test-key-not-real")
+    os.environ.setdefault("OPENAI_API_KEY", "test-key-not-real")
     # Le modele d'embedding local doit deja etre en cache (build_index.py, T016) ; force le mode
     # hors ligne pour que respx (qui mocke exclusivement GitHub/Anthropic dans ces tests) n'ait pas
     # a intercepter les requetes HTTP de huggingface_hub.

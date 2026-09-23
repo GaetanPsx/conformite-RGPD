@@ -8,7 +8,7 @@ serveur : un rapport HTML est généré par requête et peut être téléchargé
 ## Prérequis
 
 - Python 3.11+
-- Une clé API Mistral AI valide (`MISTRAL_API_KEY`), utilisée pour l'unique appel LLM payant par
+- Une clé API OpenAI valide (`OPENAI_API_KEY`), utilisée pour l'unique appel LLM payant par
   évaluation
 - Accès réseau sortant vers `api.github.com` (non authentifié, uniquement en mode dépôt)
 
@@ -33,7 +33,7 @@ python -m src.services.legal_rag.build_index
 ## Lancer le service localement
 
 ```bash
-export MISTRAL_API_KEY=...
+export OPENAI_API_KEY=sk-...
 uvicorn src.web.app:app --reload
 ```
 
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 python -m pytest
 ```
 
-Les tests d'intégration et de contrat simulent les appels GitHub et Mistral AI via `respx` : aucun
+Les tests d'intégration et de contrat simulent les appels GitHub et OpenAI via `respx` : aucun
 appel réseau réel ni clé API valide n'est nécessaire pour les faire passer.
 
 ## Déploiement (Azure App Service)
@@ -63,7 +63,7 @@ chaque push sur `main`, via l'action `azure/webapps-deploy@v3` et le secret de d
 
 Configuration requise côté Azure (Web App → *Configuration → Application settings*) :
 
-- `MISTRAL_API_KEY` : la clé API Mistral AI, jamais committée en clair dans le dépôt.
+- `OPENAI_API_KEY` : la clé API OpenAI, jamais committée en clair dans le dépôt.
 - `SCM_DO_BUILD_DURING_DEPLOYMENT=true` (généralement activé par défaut pour un déploiement Python
   via `webapps-deploy`) afin qu'Azure installe `requirements.txt` pendant le déploiement.
 - Un tier App Service Linux `B1` minimum (le tier gratuit `F1` est trop limité en mémoire/CPU pour
