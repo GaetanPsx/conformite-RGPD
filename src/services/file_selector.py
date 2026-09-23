@@ -14,6 +14,7 @@ motif).
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 
 from src.models.fichier import FichierAvecContenu, FichierDepot
 from src.models.selection import MAX_FICHIERS_PAR_CATEGORIE, SelectionAiAct, SelectionRgpd
@@ -21,6 +22,7 @@ from src.models.selection import MAX_FICHIERS_PAR_CATEGORIE, SelectionAiAct, Sel
 # Plafond applique a un fichier individuel avant envoi/scan (aligne sur FR-008, 40 000 caracteres
 # au total pour l'appel LLM ; un seul fichier ne doit pas depasser ce plafond a lui seul).
 MAX_CARACTERES_PAR_FICHIER = 40_000
+NB_THREADS_TELECHARGEMENT = 8
 
 README_NAMES = {"readme", "readme.md", "readme.rst", "readme.txt"}
 MANIFESTE_NAMES = {
@@ -111,11 +113,25 @@ def _selectionner(
     limite: int,
 ) -> tuple[list[FichierAvecContenu], bool]:
     fichiers_tries = sorted(fichiers, key=cle_tri)
+
+    # Les telechargements sont du reseau pur : on prefetch en parallele les `limite` premiers
+    # candidats (cas nominal), le reste eventuel (fichiers introuvables/illisibles) est lu a la
+    # demande. Les lectures sont memoisees pour qu'un meme fichier ne soit jamais telecharge deux fois.
+    with ThreadPoolExecutor(max_workers=NB_THREADS_TELECHARGEMENT) as pool:
+        prefetch = {
+            f.chemin: pool.submit(lecteur_contenu, f.chemin) for f in fichiers_tries[:limite]
+        }
+
+    def lecteur_memoise(chemin: str) -> bytes | None:
+        if chemin in prefetch:
+            return prefetch[chemin].result()
+        return lecteur_contenu(chemin)
+
     selectionnes: list[FichierAvecContenu] = []
     for f in fichiers_tries:
         if len(selectionnes) >= limite:
             break
-        avec_contenu = _lire_et_tronquer(f, lecteur_contenu)
+        avec_contenu = _lire_et_tronquer(f, lecteur_memoise)
         if avec_contenu is not None:
             selectionnes.append(avec_contenu)
     selection_partielle = len(fichiers_tries) > len(selectionnes)

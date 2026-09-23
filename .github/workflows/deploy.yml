@@ -16,24 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Pre-cache embedding model (evite tout telechargement au demarrage du conteneur)
-        env:
-          # Le cache HF par defaut utilise des symlinks (snapshots/ -> blobs/) qui cassent une
-          # fois zippes par le deploiement Azure (config.json devient un lien mort => vide).
-          # On force des copies reelles pour que le cache survive au zip/unzip.
-          HF_HUB_DISABLE_SYMLINKS: "1"
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python -c "
-          from src.services.legal_rag.retriever import MODEL_CACHE_DIR, _charger_index
-          from sentence_transformers import SentenceTransformer
-          model_name = _charger_index()['model_name']
-          SentenceTransformer(model_name, cache_folder=str(MODEL_CACHE_DIR))
-          "
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:

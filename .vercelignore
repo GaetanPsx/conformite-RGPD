@@ -1,0 +1,12 @@
+.venv
+.git
+.github
+.claude
+.specify
+.env
+.pytest_cache
+specs
+tests
+preview
+Procfile
+requirements-dev.txt
